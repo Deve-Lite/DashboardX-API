@@ -1,0 +1,1181 @@
+basePath: /api/v1
+definitions:
+  auth.Tokens:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  dto.ChangeUserPasswordRequest:
+    properties:
+      newPassword:
+        minLength: 6
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - newPassword
+    - password
+    type: object
+  dto.ControlAttributes:
+    properties:
+      colorFormat:
+        type: string
+      maxValue:
+        type: number
+      minValue:
+        type: number
+      offPayload:
+        type: string
+      onPayload:
+        type: string
+      payload:
+        type: string
+      payloadTemplate:
+        type: string
+      payloads:
+        additionalProperties:
+          type: string
+        type: object
+      secondSpan:
+        type: integer
+      sendAsTicks:
+        type: boolean
+      value:
+        type: string
+    type: object
+  dto.CreateBrokerRequest:
+    properties:
+      clientId:
+        type: string
+      icon:
+        $ref: '#/definitions/dto.Icon'
+      isSsl:
+        type: boolean
+      keepAlive:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      server:
+        type: string
+      username:
+        type: string
+    required:
+    - icon
+    - isSsl
+    - keepAlive
+    - name
+    - port
+    - server
+    type: object
+  dto.CreateBrokerResponse:
+    properties:
+      id:
+        type: string
+    required:
+    - id
+    type: object
+  dto.CreateDeviceControlRequest:
+    properties:
+      attributes:
+        $ref: '#/definitions/dto.ControlAttributes'
+      canDisplayName:
+        type: boolean
+      canNotifyOnPublish:
+        type: boolean
+      icon:
+        $ref: '#/definitions/dto.Icon'
+      isAvailable:
+        type: boolean
+      isConfirmationRequired:
+        type: boolean
+      name:
+        type: string
+      qualityOfService:
+        $ref: '#/definitions/enum.QoSLevel'
+      topic:
+        type: string
+      type:
+        $ref: '#/definitions/enum.ControlType'
+    required:
+    - canDisplayName
+    - canNotifyOnPublish
+    - icon
+    - isAvailable
+    - isConfirmationRequired
+    - name
+    - topic
+    - type
+    type: object
+  dto.CreateDeviceControlResponse:
+    properties:
+      id:
+        format: uuid
+        type: string
+    type: object
+  dto.CreateDeviceRequest:
+    properties:
+      basePath:
+        type: string
+      brokerId:
+        format: uuid
+        type: string
+      icon:
+        $ref: '#/definitions/dto.Icon'
+      name:
+        type: string
+      placing:
+        type: string
+    required:
+    - icon
+    - name
+    type: object
+  dto.CreateDeviceResponse:
+    properties:
+      id:
+        format: uuid
+        type: string
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.DeleteUserRequest:
+    properties:
+      password:
+        minLength: 6
+        type: string
+    required:
+    - password
+    type: object
+  dto.GetBrokerResponse:
+    properties:
+      clientId:
+        type: string
+      createdAt:
+        type: string
+      icon:
+        $ref: '#/definitions/dto.Icon'
+      id:
+        format: uuid
+        type: string
+      isSsl:
+        type: boolean
+      keepAlive:
+        type: integer
+      name:
+        type: string
+      port:
+        type: integer
+      server:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dto.GetDeviceControlResponse:
+    properties:
+      attributes:
+        $ref: '#/definitions/dto.ControlAttributes'
+      canDisplayName:
+        type: boolean
+      canNotifyOnPublish:
+        type: boolean
+      deviceId:
+        format: uuid
+        type: string
+      icon:
+        $ref: '#/definitions/dto.Icon'
+      id:
+        format: uuid
+        type: string
+      isAvailable:
+        type: boolean
+      isConfirmationRequired:
+        type: boolean
+      name:
+        type: string
+      qualityOfService:
+        $ref: '#/definitions/enum.QoSLevel'
+      topic:
+        type: string
+      type:
+        $ref: '#/definitions/enum.ControlType'
+    type: object
+  dto.GetDeviceResponse:
+    properties:
+      basePath:
+        type: string
+      brokerId:
+        format: uuid
+        type: string
+      createdAt:
+        type: string
+      icon:
+        $ref: '#/definitions/dto.Icon'
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+      placing:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dto.GetUserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      language:
+        type: string
+      name:
+        type: string
+      theme:
+        type: string
+    required:
+    - email
+    - id
+    - language
+    - name
+    - theme
+    type: object
+  dto.Icon:
+    properties:
+      backgroundColor:
+        type: string
+      name:
+        type: string
+    required:
+    - backgroundColor
+    - name
+    type: object
+  dto.IconOptional:
+    properties:
+      backgroundColor:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.LoginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.UpdateBrokerRequest:
+    properties:
+      clientId:
+        type: string
+      icon:
+        $ref: '#/definitions/dto.IconOptional'
+      isSsl:
+        type: boolean
+      keepAlive:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      server:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.UpdateDeviceControlRequest:
+    properties:
+      attributes:
+        $ref: '#/definitions/dto.ControlAttributes'
+      canDisplayName:
+        type: boolean
+      canNotifyOnPublish:
+        type: boolean
+      icon:
+        $ref: '#/definitions/dto.IconOptional'
+      isAvailable:
+        type: boolean
+      isConfirmationRequired:
+        type: boolean
+      name:
+        type: string
+      qualityOfService:
+        $ref: '#/definitions/enum.QoSLevel'
+      topic:
+        type: string
+      type:
+        $ref: '#/definitions/enum.ControlType'
+    type: object
+  dto.UpdateDeviceRequest:
+    properties:
+      basePath:
+        type: string
+      brokerId:
+        format: uuid
+        type: string
+      icon:
+        $ref: '#/definitions/dto.IconOptional'
+      name:
+        type: string
+      placing:
+        type: string
+    type: object
+  dto.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      language:
+        type: string
+      name:
+        type: string
+      theme:
+        type: string
+    type: object
+  enum.ControlType:
+    enum:
+    - button
+    - color
+    - date-time
+    - switch
+    - slider
+    - state
+    - radio
+    - text-out
+    type: string
+    x-enum-varnames:
+    - ControlButton
+    - ControlColor
+    - ControlDateTime
+    - ControlSwitch
+    - ControlSlider
+    - ControlState
+    - ControlRadio
+    - ControlTextOut
+  enum.QoSLevel:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - QoSZero
+    - QoSOne
+    - QoSTwo
+  errors.HTTPError:
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    name: Deve-Lite
+  title: DashboardX API
+  version: "1.0"
+paths:
+  /brokers:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.GetBrokerResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: List brokers
+      tags:
+      - Brokers
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBrokerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateBrokerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a broker
+      tags:
+      - Brokers
+  /brokers/{brokerId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Broker UUID
+        in: path
+        name: brokerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a broker
+      tags:
+      - Brokers
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Broker UUID
+        in: path
+        name: brokerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetBrokerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get a broker
+      tags:
+      - Brokers
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Broker UUID
+        in: path
+        name: brokerId
+        required: true
+        type: string
+      - description: Update data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateBrokerRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Update a broker
+      tags:
+      - Brokers
+  /devices:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Broker UUID
+        format: UUID
+        in: query
+        name: brokerId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.GetDeviceResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: List devices
+      tags:
+      - Devices
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateDeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a device
+      tags:
+      - Devices
+  /devices/{deviceId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a device
+      tags:
+      - Devices
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetDeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get a single device
+      tags:
+      - Devices
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      - description: Update data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Update a device
+      tags:
+      - Devices
+  /devices/{deviceId}/controls:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.GetDeviceControlResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: List a device controls
+      tags:
+      - Devices
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      - description: Create data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDeviceControlRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateDeviceControlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a device control
+      tags:
+      - Devices
+  /devices/{deviceId}/controls/{controlId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      - description: Control UUID
+        in: path
+        name: controlId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a device control
+      tags:
+      - Devices
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device UUID
+        in: path
+        name: deviceId
+        required: true
+        type: string
+      - description: Control UUID
+        in: path
+        name: controlId
+        required: true
+        type: string
+      - description: Update data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDeviceControlRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Update a device control
+      tags:
+      - Devices
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.Tokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Login a user
+      tags:
+      - Users
+  /users/me:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Delete data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a logged in user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetUserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get a logged in user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Update data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Update a logged in user
+      tags:
+      - Users
+  /users/me/password:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Change passoword data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeUserPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Change a password of logged in user
+      tags:
+      - Users
+  /users/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Requires a valid refresh token sent in the Authorization header
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.Tokens'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Generate a new pair of user tokens
+      tags:
+      - Users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Register input
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Register a new user
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

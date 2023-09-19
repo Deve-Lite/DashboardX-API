@@ -1,0 +1,45 @@
+version: '3.4'
+services:
+  app:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PORT = ${PORT}
+        - HOST = ${HOST}
+    ports:
+      - ${HOST}:3000:${PORT}
+    env_file:
+      - .env
+    networks:
+      - dashboardx_network
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: postgres:15
+    restart: always
+    networks:
+      - dashboardx_network
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=postgres
+  redis:
+    image: redis:7
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass secret_password
+    networks:
+      - dashboardx_network
+    ports:
+      - '6379:6379'
+networks:
+  dashboardx_network:
+    name: 'dev-network'
+    ipam:
+      config:
+        - subnet: 192.168.192.1/24

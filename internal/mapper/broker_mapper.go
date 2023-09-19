@@ -1,0 +1,81 @@
+package mapper
+
+import (
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
+)
+
+type BrokerMapper interface {
+	ModelToDTO(v *domain.Broker) *dto.GetBrokerResponse
+	CreateDTOToCreateModel(v *dto.CreateBrokerRequest) *domain.CreateBroker
+	UpdateDTOToUpdateModel(v *dto.UpdateBrokerRequest) *domain.UpdateBroker
+}
+
+type brokerMapper struct{}
+
+func NewBrokerMapper() BrokerMapper {
+	return &brokerMapper{}
+}
+
+func (*brokerMapper) ModelToDTO(v *domain.Broker) *dto.GetBrokerResponse {
+	r := &dto.GetBrokerResponse{
+		ID:        v.ID,
+		Name:      v.Name,
+		Server:    v.Server,
+		Port:      v.Port,
+		KeepAlive: v.KeepAlive,
+		Icon: dto.Icon{
+			Name:            v.IconName,
+			BackgroundColor: v.IconBackgroundColor,
+		},
+		IsSSL:     v.IsSSL,
+		CreatedAt: v.CreatedAt,
+		UpdatedAt: v.UpdatedAt,
+	}
+
+	if v.ClientID.Null {
+		r.ClientID = nil
+	} else {
+		r.ClientID = &v.ClientID.String
+	}
+
+	return r
+}
+
+func (*brokerMapper) CreateDTOToCreateModel(v *dto.CreateBrokerRequest) *domain.CreateBroker {
+	return &domain.CreateBroker{
+		Name:                v.Name,
+		Server:              v.Server,
+		Port:                *v.Port,
+		KeepAlive:           *v.KeepAlive,
+		IconName:            v.Icon.Name,
+		IconBackgroundColor: v.Icon.BackgroundColor,
+		IsSSL:               v.IsSSL,
+		Username:            v.Username,
+		Password:            v.Password,
+		ClientID:            v.ClientID,
+	}
+}
+
+func (*brokerMapper) UpdateDTOToUpdateModel(v *dto.UpdateBrokerRequest) *domain.UpdateBroker {
+	r := &domain.UpdateBroker{
+		Name:      v.Name,
+		Server:    v.Server,
+		Port:      v.Port,
+		KeepAlive: v.KeepAlive,
+		IsSSL:     v.IsSSL,
+		Username:  v.Username,
+		Password:  v.Password,
+		ClientID:  v.ClientID,
+	}
+
+	if v.Icon.Name.Set {
+		r.IconName = v.Icon.Name
+	}
+
+	if v.Icon.BackgroundColor.Set {
+		r.IconBackgroundColor = v.Icon.BackgroundColor
+	}
+
+	return r
+}

@@ -1,0 +1,10 @@
+FROM golang:1.21-alpine
+
+RUN mkdir /app
+WORKDIR /app
+ADD . /app
+
+RUN go get github.com/githubnemo/CompileDaemon
+RUN go install -mod=mod github.com/githubnemo/CompileDaemon
+
+ENTRYPOINT CompileDaemon --build="go build cmd/server/main.go" --command=./main
