@@ -2,6 +2,8 @@ package config
 
 import (
 	"log"
+	"path/filepath"
+	"runtime"
 
 	"github.com/spf13/viper"
 )
@@ -33,10 +35,10 @@ type CryptoConfig struct {
 }
 
 type JWTConfig struct {
-	AccessSecret    string  `mapstructure:"JWT_ACCESS_SECRET"`
-	AccessLifespan  float32 `mapstructure:"JWT_ACCESS_LIFESPAN"`
-	RefreshSecret   string  `mapstructure:"JWT_REFRESH_SECRET"`
-	RefreshLifespan float32 `mapstructure:"JWT_REFRESH_LIFESPAN"`
+	AccessSecret         string  `mapstructure:"JWT_ACCESS_SECRET"`
+	AccessLifespanHours  float32 `mapstructure:"JWT_ACCESS_LIFESPAN_HOURS"`
+	RefreshSecret        string  `mapstructure:"JWT_REFRESH_SECRET"`
+	RefreshLifespanHours float32 `mapstructure:"JWT_REFRESH_LIFESPAN_HOURS"`
 }
 
 type RedisConfig struct {
@@ -54,11 +56,13 @@ func loadConfig[T interface{}](v *viper.Viper, c T) *T {
 	return &c
 }
 
-func NewConfig() *Config {
+func NewConfig(filename string) *Config {
 	v := viper.GetViper()
 
-	v.AddConfigPath(".")
-	v.SetConfigFile(".env")
+	_, b, _, _ := runtime.Caller(0)
+	v.SetConfigFile(filepath.Join(filepath.Dir(b), "..", filename))
+
+	v.AutomaticEnv()
 
 	err := v.ReadInConfig()
 	if err != nil {

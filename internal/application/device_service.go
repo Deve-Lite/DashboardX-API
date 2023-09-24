@@ -18,11 +18,11 @@ type DeviceService interface {
 
 type deviceService struct {
 	dr repository.DeviceRepository
-	br repository.BrokerRepository
+	bs BrokerService
 }
 
-func NewDeviceService(dr repository.DeviceRepository, br repository.BrokerRepository) DeviceService {
-	return &deviceService{dr, br}
+func NewDeviceService(dr repository.DeviceRepository, bs BrokerService) DeviceService {
+	return &deviceService{dr, bs}
 }
 
 func (d *deviceService) Get(ctx context.Context, deviceID uuid.UUID, userID uuid.UUID) (*domain.Device, error) {
@@ -35,7 +35,7 @@ func (d *deviceService) List(ctx context.Context, filters *domain.ListDeviceFilt
 
 func (d *deviceService) Create(ctx context.Context, device *domain.CreateDevice) (uuid.UUID, error) {
 	if device.BrokerID.Valid {
-		if _, err := d.br.Get(ctx, device.BrokerID.UUID, device.UserID); err != nil {
+		if _, err := d.bs.Get(ctx, device.BrokerID.UUID, device.UserID); err != nil {
 			return uuid.Nil, err
 		}
 	}
@@ -45,7 +45,7 @@ func (d *deviceService) Create(ctx context.Context, device *domain.CreateDevice)
 
 func (d *deviceService) Update(ctx context.Context, device *domain.UpdateDevice) error {
 	if device.BrokerID.Set && !device.BrokerID.Null {
-		if _, err := d.br.Get(ctx, device.BrokerID.Value, device.UserID); err != nil {
+		if _, err := d.bs.Get(ctx, device.BrokerID.Value, device.UserID); err != nil {
 			return err
 		}
 	}

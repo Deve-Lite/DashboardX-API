@@ -18,16 +18,16 @@ type DeviceControlService interface {
 }
 
 type deviceControlService struct {
-	dr  repository.DeviceRepository
 	dcr repository.DeviceControlRepository
+	ds  DeviceService
 }
 
-func NewDeviceControlService(dr repository.DeviceRepository, dcr repository.DeviceControlRepository) DeviceControlService {
-	return &deviceControlService{dr, dcr}
+func NewDeviceControlService(dcr repository.DeviceControlRepository, ds DeviceService) DeviceControlService {
+	return &deviceControlService{dcr, ds}
 }
 
 func (dc *deviceControlService) List(ctx context.Context, userID uuid.UUID, deviceID uuid.UUID) ([]*domain.DeviceControl, error) {
-	if _, err := dc.dr.Get(ctx, deviceID, userID); err != nil {
+	if _, err := dc.ds.Get(ctx, deviceID, userID); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +35,7 @@ func (dc *deviceControlService) List(ctx context.Context, userID uuid.UUID, devi
 }
 
 func (dc *deviceControlService) Create(ctx context.Context, userID uuid.UUID, control *domain.CreateDeviceControl) (uuid.UUID, error) {
-	if _, err := dc.dr.Get(ctx, control.DeviceID, userID); err != nil {
+	if _, err := dc.ds.Get(ctx, control.DeviceID, userID); err != nil {
 		return uuid.Nil, err
 	}
 
@@ -53,7 +53,7 @@ func (dc *deviceControlService) Create(ctx context.Context, userID uuid.UUID, co
 }
 
 func (dc *deviceControlService) Update(ctx context.Context, userID uuid.UUID, control *domain.UpdateDeviceControl) error {
-	if _, err := dc.dr.Get(ctx, control.DeviceID, userID); err != nil {
+	if _, err := dc.ds.Get(ctx, control.DeviceID, userID); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (dc *deviceControlService) Update(ctx context.Context, userID uuid.UUID, co
 }
 
 func (dc *deviceControlService) Delete(ctx context.Context, userID uuid.UUID, deviceID uuid.UUID, controlID uuid.UUID) error {
-	if _, err := dc.dr.Get(ctx, deviceID, userID); err != nil {
+	if _, err := dc.ds.Get(ctx, deviceID, userID); err != nil {
 		return err
 	}
 

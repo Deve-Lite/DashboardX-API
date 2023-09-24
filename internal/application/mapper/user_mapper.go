@@ -3,7 +3,6 @@ package mapper
 import (
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/auth"
 	n "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
 )
 
@@ -12,7 +11,7 @@ type UserMapper interface {
 	LoginDTOToModel(v *dto.LoginUserRequest) *domain.User
 	CreateDTOToCreateModel(v *dto.CreateUserRequest) *domain.CreateUser
 	UpdateDTOToUpdateModel(v *dto.UpdateUserRequest) *domain.UpdateUser
-	TokenModelToTokenDTO(v *auth.Tokens) *dto.LoginUserResponse
+	TokenModelToTokenDTO(v *dto.Tokens) *dto.LoginUserResponse
 }
 
 type userMapper struct{}
@@ -60,7 +59,7 @@ func (*userMapper) UpdateDTOToUpdateModel(v *dto.UpdateUserRequest) *domain.Upda
 	}
 }
 
-func (*userMapper) TokenModelToTokenDTO(v *auth.Tokens) *dto.LoginUserResponse {
+func (*userMapper) TokenModelToTokenDTO(v *dto.Tokens) *dto.LoginUserResponse {
 	return &dto.LoginUserResponse{
 		AccessToken:  v.AccessToken,
 		RefreshToken: v.RefreshToken,

@@ -898,7 +898,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.Tokens"
+                            "$ref": "#/definitions/dto.Tokens"
                         }
                     },
                     "400": {
@@ -1148,6 +1148,11 @@ const docTemplate = `{
         },
         "/users/refresh": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Requires a valid refresh token sent in the Authorization header",
                 "consumes": [
                     "application/json"
@@ -1163,7 +1168,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.Tokens"
+                            "$ref": "#/definitions/dto.Tokens"
                         }
                     },
                     "401": {
@@ -1237,17 +1242,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.Tokens": {
-            "type": "object",
-            "properties": {
-                "accessToken": {
-                    "type": "string"
-                },
-                "refreshToken": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.ChangeUserPasswordRequest": {
             "type": "object",
             "required": [
@@ -1654,6 +1648,17 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "dto.Tokens": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
                 }
             }
         },

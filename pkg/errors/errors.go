@@ -14,6 +14,7 @@ var (
 	ErrMissingAuthToken      = errors.New("missing authorization token")
 	ErrControlStateExists    = errors.New("one state control per device is allowed")
 	ErrMissingParams         = errors.New("no valid properties were provided")
+	ErrInvalidRefreshToken   = errors.New("refresh token is invalid")
 )
 
 type AppError struct {
