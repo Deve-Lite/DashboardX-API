@@ -1,12 +1,5 @@
 basePath: /api/v1
 definitions:
-  auth.Tokens:
-    properties:
-      accessToken:
-        type: string
-      refreshToken:
-        type: string
-    type: object
   dto.ChangeUserPasswordRequest:
     properties:
       newPassword:
@@ -285,6 +278,13 @@ definitions:
     required:
     - email
     - password
+    type: object
+  dto.Tokens:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
     type: object
   dto.UpdateBrokerRequest:
     properties:
@@ -958,7 +958,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.Tokens'
+            $ref: '#/definitions/dto.Tokens'
         "400":
           description: Bad Request
           schema:
@@ -1126,7 +1126,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.Tokens'
+            $ref: '#/definitions/dto.Tokens'
         "401":
           description: Unauthorized
           schema:
@@ -1139,6 +1139,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
       summary: Generate a new pair of user tokens
       tags:
       - Users

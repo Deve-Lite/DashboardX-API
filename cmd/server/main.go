@@ -6,17 +6,12 @@ import (
 	"github.com/Deve-Lite/DashboardX-API-PoC/config"
 	_ "github.com/Deve-Lite/DashboardX-API-PoC/docs"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/infrastructure/persistance"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/auth"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/handler"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/middleware"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/mapper"
 	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/postgres"
-	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/validate"
+	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/redis"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -33,45 +28,27 @@ import (
 // @In							header
 // @Name						Authorization
 func main() {
-	cfg := config.NewConfig()
+	cfg := config.NewConfig(".env")
 
 	db := postgres.NewDB(cfg)
 	defer db.Close()
 
-	gin := gin.Default()
+	ch := redis.NewDB(cfg)
+	defer ch.Close()
 
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("nullmin", validate.NullMin)
-		v.RegisterValidation("nullemail", validate.NullEmail)
-		v.RegisterValidation("nulluuid", validate.NullUUID)
-		v.RegisterValidation("nullhexcolor", validate.NullHexColor)
-		v.RegisterValidation("control_attributes", validate.ControlAttributes)
-		v.RegisterValidation("control_type", validate.ControlType)
-		v.RegisterValidation("qos_level", validate.QoSLevel)
+	if cfg.Server.Env == "production" {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
-	auth := auth.NewRESTAuth(cfg)
+	gin := gin.Default()
 
-	userRepo := persistance.NewUserRepository(db)
-	brokerRepo := persistance.NewBrokerRepository(db)
-	deviceRepo := persistance.NewDeviceRepository(db)
-	controlRepo := persistance.NewDeviceControlRepository(db)
+	app := application.NewApplication(cfg, db, ch)
 
-	userSrv := application.NewUserService(cfg, userRepo, auth)
-	brokerSrv := application.NewBrokerService(brokerRepo)
-	deviceSrv := application.NewDeviceService(deviceRepo, brokerRepo)
-	controlSrv := application.NewDeviceControlService(deviceRepo, controlRepo)
+	mRule := middleware.NewRule(app.AuthSrv, app.UserSrv)
 
-	userMap := mapper.NewUserMapper()
-	brokerMap := mapper.NewBrokerMapper()
-	deviceMap := mapper.NewDeviceMapper()
-	controlMap := mapper.NewDeviceControlMapper()
-
-	userHnd := handler.NewUserHandler(userSrv, userMap)
-	brokerHnd := handler.NewBrokerHandler(brokerSrv, brokerMap)
-	deviceHnd := handler.NewDeviceHandler(deviceSrv, controlSrv, deviceMap, controlMap)
-
-	mRule := middleware.NewRule(auth, userSrv)
+	userHnd := handler.NewUserHandler(app.UserSrv, app.UserMap)
+	brokerHnd := handler.NewBrokerHandler(app.BrokerSrv, app.BrokerMap)
+	deviceHnd := handler.NewDeviceHandler(app.DeviceSrv, app.ControlSrv, app.DeviceMap, app.ControlMap)
 
 	rest.NewRouter(gin, mRule, userHnd, brokerHnd, deviceHnd)
 

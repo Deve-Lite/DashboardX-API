@@ -6,8 +6,8 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/mapper"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/mapper"
 	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

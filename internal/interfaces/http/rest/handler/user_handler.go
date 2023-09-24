@@ -6,9 +6,8 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/mapper"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	_ "github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/auth"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/mapper"
 	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
 	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
 	"github.com/gin-gonic/gin"
@@ -76,7 +75,7 @@ func (h *userHandler) Register(ctx *gin.Context) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		data	body		dto.LoginUserRequest	true	"Login data"
-//	@Success	200		{object}	auth.Tokens
+//	@Success	200		{object}	dto.Tokens
 //	@Failure	400		{object}	errors.HTTPError
 //	@Failure	404		{object}	errors.HTTPError
 //	@Failure	500		{object}	errors.HTTPError
@@ -109,10 +108,11 @@ func (h *userHandler) Login(ctx *gin.Context) {
 //
 //	@Summary		Generate a new pair of user tokens
 //	@Description	Requires a valid refresh token sent in the Authorization header
+//	@Security		BearerAuth
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	auth.Tokens
+//	@Success		200	{object}	dto.Tokens
 //	@Failure		401	{object}	errors.HTTPError
 //	@Failure		404	{object}	errors.HTTPError
 //	@Failure		500	{object}	errors.HTTPError

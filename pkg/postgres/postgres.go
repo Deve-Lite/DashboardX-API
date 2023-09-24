@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"path/filepath"
+	"runtime"
+	"strings"
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/config"
 	"github.com/golang-migrate/migrate"
@@ -52,7 +55,7 @@ func RunUp(c *config.Config) {
 		c.Postgres.Port,
 		c.Postgres.Database)
 
-	m, err := migrate.New("file://migrations", url)
+	m, err := migrate.New(getMigrationsPath(), url)
 	if err != nil {
 		log.Fatalf("Migrate: connect error: %s", err)
 	}
@@ -79,7 +82,7 @@ func RunDown(c *config.Config) {
 		c.Postgres.Port,
 		c.Postgres.Database)
 
-	m, err := migrate.New("file://migrations", url)
+	m, err := migrate.New(getMigrationsPath(), url)
 	if err != nil {
 		log.Fatalf("Migrate: connect error: %s", err)
 	}
@@ -104,6 +107,7 @@ func Create(c *config.Config) {
 	if err != nil {
 		log.Panic("Can not connect to Postgres. Error: ", err)
 	}
+	defer db.Close()
 
 	_, err = db.Exec(fmt.Sprintf(`CREATE DATABASE "%s"`, c.Postgres.Database))
 	if err != nil {
@@ -111,4 +115,31 @@ func Create(c *config.Config) {
 	}
 
 	log.Printf(`Database "%s" created`, c.Postgres.Database)
+}
+
+func Drop(c *config.Config) {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
+		c.Postgres.Host,
+		c.Postgres.Port,
+		c.Postgres.User,
+		c.Postgres.Password)
+
+	db, err := sqlx.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Panic("Can not connect to Postgres. Error: ", err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(fmt.Sprintf(`DROP DATABASE "%s"`, c.Postgres.Database))
+	if err != nil {
+		log.Panic("Could not drop database. Error: ", err)
+	}
+
+	log.Printf(`Database "%s" dropped`, c.Postgres.Database)
+}
+
+func getMigrationsPath() string {
+	_, b, _, _ := runtime.Caller(0)
+	p := filepath.Join(filepath.Dir(b), "../..", "migrations")
+	return "file://" + strings.ReplaceAll(p, "\\", "/")
 }

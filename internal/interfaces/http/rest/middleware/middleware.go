@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/auth"
 	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -19,11 +19,11 @@ type Rule interface {
 }
 
 type rule struct {
-	a  auth.RESTAuth
+	a  application.RESTAuthService
 	us application.UserService
 }
 
-func NewRule(a auth.RESTAuth, us application.UserService) Rule {
+func NewRule(a application.RESTAuthService, us application.UserService) Rule {
 	return &rule{a, us}
 }
 
@@ -33,7 +33,7 @@ func (r *rule) LoggedIn(ctx *gin.Context) {
 		return
 	}
 
-	claims, err := r.a.VerifyToken(token, "access")
+	claims, err := r.a.VerifyToken(ctx, token, "access")
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(err))
 		return
@@ -52,7 +52,7 @@ func (r *rule) ValidRefresh(ctx *gin.Context) {
 		return
 	}
 
-	claims, err := r.a.VerifyToken(token, "refresh")
+	claims, err := r.a.VerifyToken(ctx, token, "refresh")
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(err))
 		return
@@ -72,16 +72,21 @@ func (r *rule) getToken(ctx *gin.Context) string {
 		return ""
 	}
 
-	token := strings.Split(bearer, " ")[1]
-	if token == "" {
+	parts := strings.Split(bearer, " ")
+	if len(parts) != 2 {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(ae.ErrMissingAuthToken))
 		return ""
 	}
 
-	return token
+	if parts[1] == "" {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(ae.ErrMissingAuthToken))
+		return ""
+	}
+
+	return parts[1]
 }
 
-func (r *rule) setUserContext(claims *auth.RESTClaims, ctx *gin.Context) error {
+func (r *rule) setUserContext(claims *dto.RESTClaims, ctx *gin.Context) error {
 	var userID uuid.UUID
 	userID, err := uuid.Parse(claims.Issuer)
 	if err != nil {

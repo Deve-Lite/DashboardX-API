@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/config"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/auth"
 	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
 	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
 	"github.com/google/uuid"
@@ -15,8 +15,8 @@ import (
 )
 
 type UserService interface {
-	Login(ctx context.Context, user *domain.User) (*auth.Tokens, error)
-	Refresh(ctx context.Context, userID uuid.UUID) (*auth.Tokens, error)
+	Login(ctx context.Context, user *domain.User) (*dto.Tokens, error)
+	Refresh(ctx context.Context, userID uuid.UUID) (*dto.Tokens, error)
 	Get(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 	Create(ctx context.Context, user *domain.CreateUser) (uuid.UUID, error)
 	Update(ctx context.Context, user *domain.UpdateUser) error
@@ -27,14 +27,14 @@ type UserService interface {
 type userService struct {
 	c  *config.Config
 	ur repository.UserRepository
-	a  auth.RESTAuth
+	a  RESTAuthService
 }
 
-func NewUserService(c *config.Config, ur repository.UserRepository, a auth.RESTAuth) UserService {
+func NewUserService(c *config.Config, ur repository.UserRepository, a RESTAuthService) UserService {
 	return &userService{c, ur, a}
 }
 
-func (u *userService) Login(ctx context.Context, user *domain.User) (*auth.Tokens, error) {
+func (u *userService) Login(ctx context.Context, user *domain.User) (*dto.Tokens, error) {
 	var found *domain.User
 	var err error
 	found, err = u.ur.GetByEmail(ctx, user.Email)
@@ -47,7 +47,7 @@ func (u *userService) Login(ctx context.Context, user *domain.User) (*auth.Token
 		return nil, ae.ErrInvalidPassword
 	}
 
-	tokens, err := u.a.GenerateTokens(found)
+	tokens, err := u.a.GenerateTokens(ctx, found)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (u *userService) Login(ctx context.Context, user *domain.User) (*auth.Token
 	return tokens, nil
 }
 
-func (u *userService) Refresh(ctx context.Context, userID uuid.UUID) (*auth.Tokens, error) {
+func (u *userService) Refresh(ctx context.Context, userID uuid.UUID) (*dto.Tokens, error) {
 	var user *domain.User
 	var err error
 	user, err = u.ur.Get(ctx, userID)
@@ -63,7 +63,7 @@ func (u *userService) Refresh(ctx context.Context, userID uuid.UUID) (*auth.Toke
 		return nil, err
 	}
 
-	tokens, err := u.a.GenerateTokens(user)
+	tokens, err := u.a.GenerateTokens(ctx, user)
 	if err != nil {
 		return nil, err
 	}
