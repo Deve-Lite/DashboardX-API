@@ -62,8 +62,6 @@ func NewConfig(filename string) *Config {
 	_, b, _, _ := runtime.Caller(0)
 	v.SetConfigFile(filepath.Join(filepath.Dir(b), "..", filename))
 
-	v.AutomaticEnv()
-
 	err := v.ReadInConfig()
 	if err != nil {
 		log.Fatal("Can not find the .env file. Error: ", err)
