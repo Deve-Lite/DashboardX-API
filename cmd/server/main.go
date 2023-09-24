@@ -56,5 +56,7 @@ func main() {
 		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
+	gin.Use(middleware.CORS)
+
 	gin.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
 }
