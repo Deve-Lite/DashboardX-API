@@ -50,13 +50,13 @@ func main() {
 	brokerHnd := handler.NewBrokerHandler(app.BrokerSrv, app.BrokerMap)
 	deviceHnd := handler.NewDeviceHandler(app.DeviceSrv, app.ControlSrv, app.DeviceMap, app.ControlMap)
 
+	gin.Use(middleware.CORS)
+
 	rest.NewRouter(gin, mRule, userHnd, brokerHnd, deviceHnd)
 
 	if cfg.Server.Env == "development" {
 		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
-
-	gin.Use(middleware.CORS)
 
 	gin.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
 }
