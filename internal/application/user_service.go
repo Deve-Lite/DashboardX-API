@@ -87,7 +87,7 @@ func (u *userService) Create(ctx context.Context, user *domain.CreateUser) (uuid
 }
 
 func (u *userService) Update(ctx context.Context, user *domain.UpdateUser) error {
-	if !user.Password.Null {
+	if user.Password.Set && !user.Password.Null {
 		hash, err := bcrypt.GenerateFromPassword([]byte(user.Password.String), int(u.c.Crytpo.HashCost))
 		if err != nil {
 			return errors.Wrap(err, "userService.Update.GenerateFromPassword")
