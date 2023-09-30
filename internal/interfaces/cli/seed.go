@@ -5,6 +5,7 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/config"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
 	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
 	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/postgres"
@@ -123,15 +124,30 @@ func Seed(c *config.Config) {
 
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
 		DeviceID:               did1,
-		Type:                   "button",
+		Type:                   enum.ControlButton,
 		Topic:                  "button/topic",
 		Name:                   "Lamp",
-		QoS:                    0,
+		QoS:                    enum.QoSZero,
 		IsConfirmationRequired: false,
 		IsAvailable:            true,
 		IconName:               "Home",
 		IconBackgroundColor:    "#aa00ff",
-		CanNotifyOnPublish:     false,   
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             attributes,
+	})
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlButton,
+		Topic:                  "button/topic",
+		Name:                   "Lamp",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: true,
+		IsAvailable:            false,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
 		CanDisplayName:         true,
 		Attributes:             attributes,
 	})
@@ -166,10 +182,10 @@ func Seed(c *config.Config) {
 
 	app.ControlSrv.Create(ctx, uid2, &domain.CreateDeviceControl{
 		DeviceID:               did2,
-		Type:                   "button",
+		Type:                   enum.ControlButton,
 		Topic:                  "button/topic",
 		Name:                   "Lamp",
-		QoS:                    0,
+		QoS:                    enum.QoSZero,
 		IsConfirmationRequired: false,
 		IsAvailable:            true,
 		IconName:               "Home",
