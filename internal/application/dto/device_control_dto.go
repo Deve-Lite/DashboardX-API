@@ -26,10 +26,10 @@ type CreateDeviceControlRequest struct {
 	Topic                  string             `json:"topic" binding:"required"`
 	Icon                   Icon               `json:"icon" binding:"required"`
 	QoS                    *enum.QoSLevel     `json:"qualityOfService" binding:"qos_level"`
-	IsConfirmationRequired bool               `json:"isConfirmationRequired" binding:"required"`
-	IsAvailable            bool               `json:"isAvailable" binding:"required"`
-	CanNotifyOnPublish     bool               `json:"canNotifyOnPublish" binding:"required"`
-	CanDisplayName         bool               `json:"canDisplayName" binding:"required"`
+	IsConfirmationRequired *bool              `json:"isConfirmationRequired" binding:"required"`
+	IsAvailable            *bool              `json:"isAvailable" binding:"required"`
+	CanNotifyOnPublish     *bool              `json:"canNotifyOnPublish" binding:"required"`
+	CanDisplayName         *bool              `json:"canDisplayName" binding:"required"`
 }
 
 type CreateDeviceControlResponse struct {
