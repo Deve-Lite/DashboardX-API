@@ -31,6 +31,7 @@ func NewRouter(
 	bg.GET("/:brokerId", mr.LoggedIn, bh.Get)
 	bg.PATCH("/:brokerId", mr.LoggedIn, bh.Update)
 	bg.DELETE("/:brokerId", mr.LoggedIn, bh.Delete)
+	bg.GET("/:brokerId/credentials", mr.LoggedIn, bh.GetCredentials)
 
 	// Device API
 	dg := r.Group("devices")

@@ -7,6 +7,7 @@ import (
 
 type BrokerMapper interface {
 	ModelToDTO(v *domain.Broker) *dto.GetBrokerResponse
+	ModelToCredentialsDTO(v *domain.Broker) *dto.GetBrokerCredentialsResponse
 	CreateDTOToCreateModel(v *dto.CreateBrokerRequest) *domain.CreateBroker
 	UpdateDTOToUpdateModel(v *dto.UpdateBrokerRequest) *domain.UpdateBroker
 }
@@ -37,6 +38,26 @@ func (*brokerMapper) ModelToDTO(v *domain.Broker) *dto.GetBrokerResponse {
 		r.ClientID = nil
 	} else {
 		r.ClientID = &v.ClientID.String
+	}
+
+	return r
+}
+
+func (*brokerMapper) ModelToCredentialsDTO(v *domain.Broker) *dto.GetBrokerCredentialsResponse {
+	r := &dto.GetBrokerCredentialsResponse{
+		ID: v.ID,
+	}
+
+	if v.Password.Null {
+		r.Password = nil
+	} else {
+		r.Password = &v.Password.String
+	}
+
+	if v.Username.Null {
+		r.Username = nil
+	} else {
+		r.Username = &v.Username.String
 	}
 
 	return r

@@ -19,6 +19,7 @@ type BrokerHandler interface {
 	Create(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	GetCredentials(ctx *gin.Context)
 }
 
 type brokerHandler struct {
@@ -253,6 +254,51 @@ func (h *brokerHandler) Delete(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusNoContent)
+}
+
+// BrokerGetCredentials godoc
+//
+//	@Summary	Get broker's credentials
+//	@Tags		Brokers
+//	@Security	BearerAuth
+//	@Accept		json
+//	@Produce	json
+//	@Param		brokerId	path		string	true	"Broker UUID"
+//	@Success	200			{object}	dto.GetBrokerCredentialsResponse
+//	@Failure	400			{object}	errors.HTTPError
+//	@Failure	401			{object}	errors.HTTPError
+//	@Failure	404			{object}	errors.HTTPError
+//	@Failure	500			{object}	errors.HTTPError
+//	@Router		/brokers/{brokerId}/credentials [get]
+func (h *brokerHandler) GetCredentials(ctx *gin.Context) {
+	var err error
+	var brokerID, userID uuid.UUID
+
+	userID, err = h.getUserID(ctx)
+	if err != nil {
+		return
+	}
+
+	brokerID, err = h.getBrokerID(ctx)
+	if err != nil {
+		return
+	}
+
+	var broker *domain.Broker
+	broker, err = h.bs.Get(ctx, brokerID, userID)
+	if err != nil {
+		var code int
+		if errors.Is(err, ae.ErrBrokerNotFound) {
+			code = http.StatusNotFound
+		} else {
+			code = http.StatusInternalServerError
+		}
+
+		ctx.AbortWithStatusJSON(code, ae.NewHTTPError(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, h.m.ModelToCredentialsDTO(broker))
 }
 
 func (h *brokerHandler) getBrokerID(ctx *gin.Context) (uuid.UUID, error) {
