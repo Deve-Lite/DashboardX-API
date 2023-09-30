@@ -2,10 +2,11 @@
 
 ## Setup
 
-1. `docker compose run --rm app go run ./cmd/cli/main.go create`
-2. `docker compose run --rm app go run ./cmd/cli/main.go up`
-3. `docker compose run --rm app go run ./cmd/cli/main.go seed`
-4. `docker compose up -d`
+Run `./scripts/d_setup.ps1`, it setups whole system from the scratch. Be aware that all stored data will be removed.
+
+## Upgrade
+
+To upgrade (in case of new changes or migrations) the API run `./scripts/d_upgrade.ps1` 
 
 ## Testing
 
