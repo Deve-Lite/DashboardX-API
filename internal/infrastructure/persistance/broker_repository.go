@@ -26,7 +26,7 @@ func (r *brokerRepository) Get(ctx context.Context, brokerID uuid.UUID, userID u
 	broker := &domain.Broker{}
 
 	sqls := `
-		SELECT "id", "user_id", "name", "server", "port", "keep_alive", "icon_name", "is_ssl", "username",
+		SELECT "id", "user_id", "name", "server", "port", "keep_alive", "icon_name", "icon_background_color", "is_ssl", "username",
 			"password", "client_id", "created_at", "updated_at"
 		FROM "brokers"
 		WHERE "id" = $1 AND "user_id" = $2
