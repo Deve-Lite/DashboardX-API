@@ -50,7 +50,7 @@ func (*brokerMapper) CreateDTOToCreateModel(v *dto.CreateBrokerRequest) *domain.
 		KeepAlive:           *v.KeepAlive,
 		IconName:            v.Icon.Name,
 		IconBackgroundColor: v.Icon.BackgroundColor,
-		IsSSL:               v.IsSSL,
+		IsSSL:               *v.IsSSL,
 		Username:            v.Username,
 		Password:            v.Password,
 		ClientID:            v.ClientID,

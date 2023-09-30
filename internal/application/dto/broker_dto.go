@@ -17,7 +17,7 @@ type CreateBrokerRequest struct {
 	Port      *uint16  `json:"port" binding:"required"`
 	KeepAlive *uint16  `json:"keepAlive" binding:"required"`
 	Icon      Icon     `json:"icon" binding:"required"`
-	IsSSL     bool     `json:"isSsl" binding:"required"`
+	IsSSL     *bool    `json:"isSsl" binding:"required"`
 	Username  t.String `json:"username" swaggertype:"string"`
 	Password  t.String `json:"password" swaggertype:"string"`
 	ClientID  t.String `json:"clientId" swaggertype:"string"`

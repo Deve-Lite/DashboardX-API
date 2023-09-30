@@ -112,10 +112,10 @@ func (*deviceControlMapper) CreateDTOToCreateModel(v *dto.CreateDeviceControlReq
 		IconName:               v.Icon.Name,
 		IconBackgroundColor:    v.Icon.BackgroundColor,
 		QoS:                    *v.QoS,
-		IsAvailable:            v.IsAvailable,
-		IsConfirmationRequired: v.IsConfirmationRequired,
-		CanDisplayName:         v.CanDisplayName,
-		CanNotifyOnPublish:     v.CanNotifyOnPublish,
+		IsAvailable:            *v.IsAvailable,
+		IsConfirmationRequired: *v.IsConfirmationRequired,
+		CanDisplayName:         *v.CanDisplayName,
+		CanNotifyOnPublish:     *v.CanNotifyOnPublish,
 		Topic:                  v.Topic,
 	}
 
