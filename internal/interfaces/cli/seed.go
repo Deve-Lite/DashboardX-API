@@ -5,6 +5,7 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/config"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
+	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
 	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
 	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/postgres"
@@ -38,61 +39,61 @@ func Seed(c *config.Config) {
 	bid1, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid1,
 		Name:                "Test Devices",
-		Port:                8883,
+		Port:                8884,
 		Username:            t.NewString("test01", false, true),
 		IsSSL:               true,
 		Password:            t.NewString("test01", false, true),
 		ClientID:            t.NewString("123", false, true),
 		KeepAlive:           60,
-		IconName:            "default.png",
+		IconName:            "Home",
 		IconBackgroundColor: "#ff00ff",
-		Server:              "ef57f832f11b4e89960ef452f56e6aa3.s2.eu.hivemq.cloud",
+		Server:              "broker.hivemq.com",
 	})
 	bid2, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid1,
 		Name:                "Home Devices",
-		Port:                8883,
-		Username:            t.NewString("test01", false, true),
+		Port:                8884,
+		Username:            t.NewString("admin", false, true),
 		IsSSL:               true,
-		Password:            t.NewString("test01", false, true),
-		ClientID:            t.NewString("123", false, true),
+		Password:            t.NewString("Admin123", false, true),
+		ClientID:            t.NewString("Admin123", false, true),
 		KeepAlive:           10,
-		IconName:            "default.png",
+		IconName:            "Home",
 		IconBackgroundColor: "#aa00ff",
 		Server:              "ef57f832f11b4e89960ef452f56e6aa3.s2.eu.hivemq.cloud",
 	})
 	bid3, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid2,
 		Name:                "Test Devices",
-		Port:                8883,
-		Username:            t.NewString("test01", false, true),
-		IsSSL:               true,
-		Password:            t.NewString("test01", false, true),
-		ClientID:            t.NewString("123", false, true),
-		KeepAlive:           20,
-		IconName:            "default.png",
-		IconBackgroundColor: "#cc00ff",
-		Server:              "ef57f832f11b4e89960ef452f56e6aa3.s2.eu.hivemq.cloud",
-	})
-	bid4, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
-		UserID:              uid2,
-		Name:                "Test Devices",
-		Port:                8883,
+		Port:                8884,
 		Username:            t.NewString("test01", false, true),
 		IsSSL:               true,
 		Password:            t.NewString("test01", false, true),
 		ClientID:            t.NewString("123", false, true),
 		KeepAlive:           60,
-		IconName:            "default.png",
-		IconBackgroundColor: "#dd00ff",
+		IconName:            "Home",
+		IconBackgroundColor: "#ff00ff",
+		Server:              "broker.hivemq.com",
+	})
+	bid4, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
+		UserID:              uid2,
+		Name:                "Home Devices",
+		Port:                8884,
+		Username:            t.NewString("admin", false, true),
+		IsSSL:               true,
+		Password:            t.NewString("Admin123", false, true),
+		ClientID:            t.NewString("Admin123", false, true),
+		KeepAlive:           10,
+		IconName:            "Home",
+		IconBackgroundColor: "#aa00ff",
 		Server:              "ef57f832f11b4e89960ef452f56e6aa3.s2.eu.hivemq.cloud",
 	})
 
-	app.DeviceSrv.Create(ctx, &domain.CreateDevice{
+	did1, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid1,
 		Name:                "Lamp",
 		Placing:             t.NewString("Office", false, true),
-		IconName:            "default2.png",
+		IconName:            "Bussiness",
 		IconBackgroundColor: "#86b049",
 		BasePath:            t.NewString("office-lamp", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
@@ -110,16 +111,52 @@ func Seed(c *config.Config) {
 		UserID:              uid1,
 		Name:                "Car",
 		Placing:             t.NewString("Office", false, true),
-		IconName:            "default2.png",
+		IconName:            "Call",
 		IconBackgroundColor: "#86b049",
 		BasePath:            t.NewString("car", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid1, Valid: true},
 	})
-	app.DeviceSrv.Create(ctx, &domain.CreateDevice{
+
+	attributes := make(domain.ControlAttributes)
+
+	// Adding some attributes
+	attributes["payload"] = "red"
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlButton,
+		Topic:                  "button/topic",
+		Name:                   "Lamp",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: false,
+		IsAvailable:            true,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             attributes,
+	})
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlButton,
+		Topic:                  "button/topic",
+		Name:                   "Lamp",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: true,
+		IsAvailable:            false,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             attributes,
+	})
+
+	did2, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid2,
 		Name:                "Lamp",
 		Placing:             t.NewString("Office", false, true),
-		IconName:            "default2.png",
+		IconName:            "LaptopMac",
 		IconBackgroundColor: "#525b88",
 		BasePath:            t.NewString("office-lamp", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid4, Valid: true},
@@ -128,7 +165,7 @@ func Seed(c *config.Config) {
 		UserID:              uid2,
 		Name:                "Lamp",
 		Placing:             t.NewString("Bedroom", false, true),
-		IconName:            "default2.png",
+		IconName:            "LaptopChromebook",
 		IconBackgroundColor: "#dff5ce",
 		BasePath:            t.NewString("bedroom-lamp", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid4, Valid: true},
@@ -137,9 +174,24 @@ func Seed(c *config.Config) {
 		UserID:              uid2,
 		Name:                "Car",
 		Placing:             t.NewString("Office", false, true),
-		IconName:            "default2.png",
+		IconName:            "LaptopChromebook",
 		IconBackgroundColor: "#86B049",
 		BasePath:            t.NewString("car", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid3, Valid: true},
+	})
+
+	app.ControlSrv.Create(ctx, uid2, &domain.CreateDeviceControl{
+		DeviceID:               did2,
+		Type:                   enum.ControlButton,
+		Topic:                  "button/topic",
+		Name:                   "Lamp",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: false,
+		IsAvailable:            true,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             attributes,
 	})
 }
