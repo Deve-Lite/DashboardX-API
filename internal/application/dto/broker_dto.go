@@ -51,3 +51,9 @@ type GetBrokerResponse struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+type GetBrokerCredentialsResponse struct {
+	ID       uuid.UUID `json:"id" format:"uuid"`
+	Username *string   `json:"username"`
+	Password *string   `json:"password"`
+}

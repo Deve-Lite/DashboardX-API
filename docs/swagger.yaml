@@ -158,6 +158,16 @@ definitions:
     required:
     - password
     type: object
+  dto.GetBrokerCredentialsResponse:
+    properties:
+      id:
+        format: uuid
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   dto.GetBrokerResponse:
     properties:
       clientId:
@@ -577,6 +587,44 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a broker
+      tags:
+      - Brokers
+  /brokers/{brokerId}/credentials:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Broker UUID
+        in: path
+        name: brokerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetBrokerCredentialsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get broker's credentials
       tags:
       - Brokers
   /devices:
