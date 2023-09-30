@@ -3,6 +3,7 @@ package handler_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -400,6 +401,54 @@ func TestUserRefresh(t *testing.T) {
 		assert.Equal(t, isAdmin1, isAdmin2)
 	})
 
+	t.Run("should accept newly created refresh token", func(t *testing.T) {
+		u := tt.CreateUser(a, "user8", "test1234", "user8@test.com")
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req.Header.Set("Authorization", u.RefreshToken)
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+
+		data := Tokens{}
+		err := json.Unmarshal(w.Body.Bytes(), &data)
+		if err != nil {
+			panic(err)
+		}
+
+		w = httptest.NewRecorder()
+		req, _ = http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", data.RefreshToken))
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+	})
+
+	t.Run("should create valid access token", func(t *testing.T) {
+		u := tt.CreateUser(a, "user10", "test1234", "user10@test.com")
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req.Header.Set("Authorization", u.RefreshToken)
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+
+		data := Tokens{}
+		err := json.Unmarshal(w.Body.Bytes(), &data)
+		if err != nil {
+			panic(err)
+		}
+
+		w = httptest.NewRecorder()
+		req, _ = http.NewRequest("GET", "/api/v1/users/me", nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", data.AccessToken))
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+	})
+
 	t.Run("should not accept an access token", func(t *testing.T) {
 		u := tt.CreateUser(a, "user4", "test1234", "user4@test.com")
 
@@ -411,40 +460,23 @@ func TestUserRefresh(t *testing.T) {
 		assert.Equal(t, 401, w.Code)
 	})
 
-	// Fix this one, it's not async
-	// t.Run("should allow a refresh token to be used only once", func(t *testing.T) {
-	// 	u := tt.CreateUser(a, "user6", "test1234", "user6@test.com")
+	t.Run("should allow a refresh token to be used only once", func(t *testing.T) {
+		u := tt.CreateUser(a, "user6", "test1234", "user6@test.com")
 
-	// 	wg := sync.WaitGroup{}
-	// 	wg.Add(2)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req.Header.Set("Authorization", u.RefreshToken)
+		g.ServeHTTP(w, req)
 
-	// 	var r1, r2 int
+		assert.Equal(t, w.Code, 200)
 
-	// 	go func() {
-	// 		w := httptest.NewRecorder()
-	// 		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
-	// 		req.Header.Set("Authorization", u.RefreshToken)
-	// 		g.ServeHTTP(w, req)
+		w = httptest.NewRecorder()
+		req, _ = http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req.Header.Set("Authorization", u.RefreshToken)
+		g.ServeHTTP(w, req)
 
-	// 		r1 = w.Code
-	// 		defer wg.Done()
-	// 	}()
-
-	// 	go func() {
-	// 		w := httptest.NewRecorder()
-	// 		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
-	// 		req.Header.Set("Authorization", u.RefreshToken)
-	// 		g.ServeHTTP(w, req)
-
-	// 		r2 = w.Code
-	// 		defer wg.Done()
-	// 	}()
-
-	// 	wg.Wait()
-
-	// 	assert.Equal(t, r1, 200)
-	// 	assert.Equal(t, r2, 401)
-	// })
+		assert.Equal(t, w.Code, 401)
+	})
 
 	t.Run("should return 401 when token is invalid", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -547,5 +579,64 @@ func TestUserGetMe(t *testing.T) {
 		g.ServeHTTP(w, req)
 
 		assert.Equal(t, 404, w.Code)
+	})
+}
+
+func TestUserUpdateMe(t *testing.T) {
+	tt := test.NewTest()
+	defer tt.Teardown()
+	g, a := tt.SetupApp()
+
+	u := tt.CreateUser(a, "user1", "test1234", "user1@test.com")
+
+	t.Run("should return 204 when updated a user", func(t *testing.T) {
+		p := strings.NewReader(`
+			{
+				"language": "en"
+			}
+		`)
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("PATCH", "/api/v1/users/me", p)
+		req.Header.Set("Authorization", u.AccessToken)
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 204, w.Code)
+	})
+
+	t.Run("should save new values", func(t *testing.T) {
+		p := strings.NewReader(`
+			{
+				"language": "it",
+				"email": "new-mail@test.pl",
+				"name": "new-name",
+				"theme": "dark"
+			}
+		`)
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("PATCH", "/api/v1/users/me", p)
+		req.Header.Set("Authorization", u.AccessToken)
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 204, w.Code)
+
+		w = httptest.NewRecorder()
+		req, _ = http.NewRequest("GET", "/api/v1/users/me", nil)
+		req.Header.Set("Authorization", u.AccessToken)
+		g.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+
+		data := User{}
+		err := json.Unmarshal(w.Body.Bytes(), &data)
+		if err != nil {
+			panic(err)
+		}
+
+		assert.Equal(t, data.Email, "new-mail@test.pl")
+		assert.Equal(t, data.Name, "new-name")
+		assert.Equal(t, data.Language, "it")
+		assert.Equal(t, data.Theme, "dark")
 	})
 }
