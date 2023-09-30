@@ -34,12 +34,14 @@ func (a *restAuthService) GenerateTokens(ctx context.Context, user *domain.User)
 	}
 	arc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(a.c.JWT.AccessLifespanHours * float32(time.Hour))))
 	arc.Issuer = user.ID.String()
+	arc.ID = uuid.NewString()
 
 	rrc := dto.RESTClaims{
 		IsAdmin: user.IsAdmin,
 	}
 	rrc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(a.c.JWT.RefreshLifespanHours * float32(time.Hour))))
 	rrc.Issuer = user.ID.String()
+	rrc.ID = uuid.NewString()
 
 	ac := jwt.NewWithClaims(jwt.SigningMethodHS256, arc)
 	rc := jwt.NewWithClaims(jwt.SigningMethodHS256, rrc)
@@ -55,15 +57,13 @@ func (a *restAuthService) GenerateTokens(ctx context.Context, user *domain.User)
 		return nil, err
 	}
 
-	if err := a.tr.DeleteRefresh(ctx, user.ID); err != nil {
-		return nil, err
-	}
-
-	a.tr.SetRefresh(ctx, &domain.Token{
+	if err := a.tr.SetRefresh(ctx, &domain.Token{
 		UserID:          user.ID,
 		Refresh:         rt,
 		ExpirationHours: a.c.JWT.RefreshLifespanHours,
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	return &dto.Tokens{
 		AccessToken:  at,
@@ -78,7 +78,7 @@ func (a *restAuthService) VerifyToken(ctx context.Context, token string, tokenTy
 	} else if tokenType == "refresh" {
 		secret = a.c.JWT.RefreshSecret
 	} else {
-		log.Panicln("invalid token type")
+		log.Panic("invalid token type")
 	}
 
 	parsed, err := jwt.ParseWithClaims(token, &dto.RESTClaims{}, func(t *jwt.Token) (interface{}, error) {
@@ -98,6 +98,11 @@ func (a *restAuthService) VerifyToken(ctx context.Context, token string, tokenTy
 
 		if found != token {
 			return nil, ae.ErrInvalidRefreshToken
+		}
+
+		err = a.tr.DeleteRefresh(ctx, uuid.MustParse(claims.Issuer))
+		if err != nil {
+			return nil, err
 		}
 	}
 
