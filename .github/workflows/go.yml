@@ -1,0 +1,21 @@
+name: Go
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup System
+        run: docker compose up -d
+
+      - name: Test
+        run: docker compose run --rm app go test -v -timeout 30s ./internal/interfaces/http/rest/handler
+
+      - name: Teardown System
+        run: docker compose stop
