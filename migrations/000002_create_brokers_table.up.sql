@@ -14,6 +14,7 @@ CREATE TABLE "brokers" (
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     CONSTRAINT "brokers_id_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "brokers_user_id_server_key" UNIQUE ("user_id", "server"),
     CONSTRAINT "brokers_user_id_fkey" FOREIGN KEY ("user_id")
         REFERENCES "users"("id")
         ON DELETE CASCADE

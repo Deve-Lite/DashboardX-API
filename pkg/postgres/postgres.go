@@ -21,7 +21,8 @@ const (
 )
 
 const (
-	UserEmailConstraint = "users_email_key"
+	UserEmailConstraint          = "users_email_key"
+	BrokerUserIDServerConstraint = "brokers_user_id_server_key"
 )
 
 func NewDB(c *config.Config) *sqlx.DB {
