@@ -125,6 +125,7 @@ func (h *brokerHandler) List(ctx *gin.Context) {
 //	@Failure	400		{object}	errors.HTTPError
 //	@Failure	401		{object}	errors.HTTPError
 //	@Failure	404		{object}	errors.HTTPError
+//	@Failure	409		{object}	errors.HTTPError
 //	@Failure	500		{object}	errors.HTTPError
 //	@Router		/brokers [post]
 func (h *brokerHandler) Create(ctx *gin.Context) {
@@ -148,6 +149,11 @@ func (h *brokerHandler) Create(ctx *gin.Context) {
 	var brokerID uuid.UUID
 	brokerID, err = h.bs.Create(ctx, broker)
 	if err != nil {
+		if errors.Is(err, ae.ErrBrokerServerExists) {
+			ctx.AbortWithStatusJSON(http.StatusConflict, ae.NewHTTPError(err))
+			return
+		}
+
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(err))
 		return
 	}
@@ -170,6 +176,7 @@ func (h *brokerHandler) Create(ctx *gin.Context) {
 //	@Failure	400	{object}	errors.HTTPError
 //	@Failure	401	{object}	errors.HTTPError
 //	@Failure	404	{object}	errors.HTTPError
+//	@Failure	409	{object}	errors.HTTPError
 //	@Failure	500	{object}	errors.HTTPError
 //	@Router		/brokers/{brokerId} [patch]
 func (h *brokerHandler) Update(ctx *gin.Context) {
@@ -201,6 +208,8 @@ func (h *brokerHandler) Update(ctx *gin.Context) {
 		var code int
 		if errors.Is(err, ae.ErrBrokerNotFound) {
 			code = http.StatusNotFound
+		} else if errors.Is(err, ae.ErrBrokerServerExists) {
+			code = http.StatusConflict
 		} else {
 			code = http.StatusInternalServerError
 		}

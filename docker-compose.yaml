@@ -5,13 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - PORT = ${PORT}
-        - HOST = ${HOST}
     ports:
-      - ${HOST}:3000:${PORT}
-    env_file:
-      - .env
+      - 3000:3000
     networks:
       - dashboardx_network
     stdin_open: true

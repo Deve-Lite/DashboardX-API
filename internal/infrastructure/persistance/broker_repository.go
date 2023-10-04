@@ -9,8 +9,10 @@ import (
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
 	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
+	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/postgres"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
@@ -105,6 +107,12 @@ func (r *brokerRepository) Create(ctx context.Context, broker *domain.CreateBrok
 	sql := fmt.Sprintf(`INSERT INTO "brokers" (%s) VALUES (%s) RETURNING "id"`, f.String(), p)
 
 	if err := r.db.GetContext(ctx, created, sql); err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			if pgErr.Code == postgres.DuplicatedKey && pgErr.Constraint == postgres.BrokerUserIDServerConstraint {
+				return uuid.Nil, ae.ErrBrokerServerExists
+			}
+		}
+
 		return uuid.Nil, errors.Wrap(err, "brokerRepository.Create.GetContext")
 	}
 
@@ -176,6 +184,12 @@ func (r *brokerRepository) Update(ctx context.Context, broker *domain.UpdateBrok
 
 	sr, err := r.db.ExecContext(ctx, sql)
 	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			if pgErr.Code == postgres.DuplicatedKey && pgErr.Constraint == postgres.BrokerUserIDServerConstraint {
+				return ae.ErrBrokerServerExists
+			}
+		}
+
 		return errors.Wrap(err, "brokerRepository.Update.ExecContext")
 	}
 
