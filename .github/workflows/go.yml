@@ -14,8 +14,11 @@ jobs:
       - name: Setup System
         run: docker compose up -d
 
-      - name: Test
+      - name: Test HTTP/REST
         run: docker compose run --rm app go test -v -timeout 30s ./internal/interfaces/http/rest/handler
+
+      - name: Test Application
+        run: docker compose run --rm app go test -v -timeout 30s ./internal/application
 
       - name: Teardown System
         run: docker compose stop

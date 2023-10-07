@@ -374,6 +374,70 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Brokers"
+                ],
+                "summary": "Set broker's credentials",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Broker UUID",
+                        "name": "brokerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Overwrite data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetBrokerCredentialsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    }
+                }
             }
         },
         "/devices": {
@@ -1398,16 +1462,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "password": {
-                    "type": "string"
-                },
                 "port": {
                     "type": "integer"
                 },
                 "server": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }
@@ -1738,6 +1796,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.SetBrokerCredentialsRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Tokens": {
             "type": "object",
             "properties": {
@@ -1767,16 +1836,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "password": {
-                    "type": "string"
-                },
                 "port": {
                     "type": "integer"
                 },
                 "server": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }
