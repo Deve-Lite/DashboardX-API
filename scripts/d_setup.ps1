@@ -1,6 +1,9 @@
 # Clean setup of the system, forces to delete all stored data!
 
 docker compose rm -vfs
+docker rmi -f dashboardx-api-app
+
+docker compose build --no-cache
 
 docker compose run --rm app go run ./cmd/cli/main.go create
 docker compose run --rm app go run ./cmd/cli/main.go up
