@@ -76,6 +76,27 @@ var NullHexColor validator.Func = func(fl validator.FieldLevel) bool {
 	return true
 }
 
+var RequiredNullString validator.Func = func(fl validator.FieldLevel) bool {
+	v, ok := fl.Field().Interface().(t.String)
+	if !ok {
+		return false
+	}
+
+	if !v.Set {
+		return false
+	}
+
+	if v.Null {
+		return true
+	}
+
+	if err := validate.Var(v.String, "required"); err != nil {
+		return false
+	}
+
+	return true
+}
+
 var ControlType validator.Func = func(fl validator.FieldLevel) bool {
 	_, ok := fl.Parent().FieldByName("Type").Interface().(*enum.ControlType)
 	if !ok {

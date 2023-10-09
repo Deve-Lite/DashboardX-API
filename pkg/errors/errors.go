@@ -16,6 +16,7 @@ var (
 	ErrControlStateExists    = errors.New("one state control per device is allowed")
 	ErrMissingParams         = errors.New("no valid properties were provided")
 	ErrInvalidRefreshToken   = errors.New("refresh token is invalid")
+	ErrNoBrokerCredentials   = errors.New("broker credentials are not set")
 )
 
 type AppError struct {

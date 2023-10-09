@@ -31,7 +31,8 @@ type PostgresConfig struct {
 }
 
 type CryptoConfig struct {
-	HashCost uint8 `mapstructure:"CRYPTO_HASH_COST"`
+	HashCost      uint8  `mapstructure:"CRYPTO_HASH_COST"`
+	BrokersAESKey string `mapstructure:"CRYPTO_BROKERS_AES_KEY"`
 }
 
 type JWTConfig struct {

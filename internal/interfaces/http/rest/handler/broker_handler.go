@@ -20,6 +20,7 @@ type BrokerHandler interface {
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	GetCredentials(ctx *gin.Context)
+	SetCredentials(ctx *gin.Context)
 }
 
 type brokerHandler struct {
@@ -294,7 +295,7 @@ func (h *brokerHandler) GetCredentials(ctx *gin.Context) {
 	}
 
 	var broker *domain.Broker
-	broker, err = h.bs.Get(ctx, brokerID, userID)
+	broker, err = h.bs.GetCredentials(ctx, brokerID, userID)
 	if err != nil {
 		var code int
 		if errors.Is(err, ae.ErrBrokerNotFound) {
@@ -308,6 +309,61 @@ func (h *brokerHandler) GetCredentials(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, h.m.ModelToCredentialsDTO(broker))
+}
+
+// BrokerSetCredentials godoc
+//
+//	@Summary	Set broker's credentials
+//	@Tags		Brokers
+//	@Security	BearerAuth
+//	@Accept		json
+//	@Produce	json
+//	@Param		brokerId	path	string							true	"Broker UUID"
+//	@Param		data		body	dto.SetBrokerCredentialsRequest	true	"Overwrite data"
+//	@Success	204
+//	@Failure	400	{object}	errors.HTTPError
+//	@Failure	401	{object}	errors.HTTPError
+//	@Failure	404	{object}	errors.HTTPError
+//	@Failure	500	{object}	errors.HTTPError
+//	@Router		/brokers/{brokerId}/credentials [put]
+func (h *brokerHandler) SetCredentials(ctx *gin.Context) {
+	var err error
+	var brokerID, userID uuid.UUID
+
+	userID, err = h.getUserID(ctx)
+	if err != nil {
+		return
+	}
+
+	brokerID, err = h.getBrokerID(ctx)
+	if err != nil {
+		return
+	}
+
+	body := &dto.SetBrokerCredentialsRequest{}
+	if err := ctx.ShouldBindJSON(body); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
+		return
+	}
+
+	broker := h.m.SetCredentialsDTOToUpdateModel(body)
+	broker.UserID = userID
+	broker.ID = brokerID
+
+	err = h.bs.SetCredentials(ctx, broker)
+	if err != nil {
+		var code int
+		if errors.Is(err, ae.ErrBrokerNotFound) {
+			code = http.StatusNotFound
+		} else {
+			code = http.StatusInternalServerError
+		}
+
+		ctx.AbortWithStatusJSON(code, ae.NewHTTPError(err))
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
 }
 
 func (h *brokerHandler) getBrokerID(ctx *gin.Context) (uuid.UUID, error) {

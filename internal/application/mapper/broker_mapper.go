@@ -10,6 +10,7 @@ type BrokerMapper interface {
 	ModelToCredentialsDTO(v *domain.Broker) *dto.GetBrokerCredentialsResponse
 	CreateDTOToCreateModel(v *dto.CreateBrokerRequest) *domain.CreateBroker
 	UpdateDTOToUpdateModel(v *dto.UpdateBrokerRequest) *domain.UpdateBroker
+	SetCredentialsDTOToUpdateModel(v *dto.SetBrokerCredentialsRequest) *domain.UpdateBroker
 }
 
 type brokerMapper struct{}
@@ -72,8 +73,6 @@ func (*brokerMapper) CreateDTOToCreateModel(v *dto.CreateBrokerRequest) *domain.
 		IconName:            v.Icon.Name,
 		IconBackgroundColor: v.Icon.BackgroundColor,
 		IsSSL:               *v.IsSSL,
-		Username:            v.Username,
-		Password:            v.Password,
 		ClientID:            v.ClientID,
 	}
 }
@@ -85,8 +84,6 @@ func (*brokerMapper) UpdateDTOToUpdateModel(v *dto.UpdateBrokerRequest) *domain.
 		Port:      v.Port,
 		KeepAlive: v.KeepAlive,
 		IsSSL:     v.IsSSL,
-		Username:  v.Username,
-		Password:  v.Password,
 		ClientID:  v.ClientID,
 	}
 
@@ -99,4 +96,11 @@ func (*brokerMapper) UpdateDTOToUpdateModel(v *dto.UpdateBrokerRequest) *domain.
 	}
 
 	return r
+}
+
+func (*brokerMapper) SetCredentialsDTOToUpdateModel(v *dto.SetBrokerCredentialsRequest) *domain.UpdateBroker {
+	return &domain.UpdateBroker{
+		Username: v.Username,
+		Password: v.Password,
+	}
 }

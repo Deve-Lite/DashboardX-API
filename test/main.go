@@ -3,7 +3,10 @@ package test
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"net/http/httptest"
 
 	"github.com/Deve-Lite/DashboardX-API-PoC/config"
 	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
@@ -38,6 +41,7 @@ type Test interface {
 	Teardown()
 	CreateUser(app *application.Application, name string, password string, email string) *User
 	DeleteUser(app *application.Application, userID uuid.UUID)
+	MakeRequest(g *gin.Engine, method string, url string, payload io.Reader, token *string) *httptest.ResponseRecorder
 }
 
 func NewTest() Test {
@@ -51,6 +55,19 @@ func NewTest() Test {
 	d := postgres.NewDB(c)
 	ch := redis.NewDB(c)
 	return &test{c, d, ch}
+}
+
+func (t *test) MakeRequest(g *gin.Engine, method string, url string, payload io.Reader, token *string) *httptest.ResponseRecorder {
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(method, url, payload)
+
+	if token != nil {
+		req.Header.Set("Authorization", *token)
+	}
+
+	g.ServeHTTP(w, req)
+
+	return w
 }
 
 func (t *test) SetupApp() (*gin.Engine, *application.Application) {

@@ -51,13 +51,9 @@ definitions:
         type: integer
       name:
         type: string
-      password:
-        type: string
       port:
         type: integer
       server:
-        type: string
-      username:
         type: string
     required:
     - icon
@@ -289,6 +285,13 @@ definitions:
     - email
     - password
     type: object
+  dto.SetBrokerCredentialsRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   dto.Tokens:
     properties:
       accessToken:
@@ -308,13 +311,9 @@ definitions:
         type: integer
       name:
         type: string
-      password:
-        type: string
       port:
         type: integer
       server:
-        type: string
-      username:
         type: string
     type: object
   dto.UpdateDeviceControlRequest:
@@ -633,6 +632,47 @@ paths:
       security:
       - BearerAuth: []
       summary: Get broker's credentials
+      tags:
+      - Brokers
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Broker UUID
+        in: path
+        name: brokerId
+        required: true
+        type: string
+      - description: Overwrite data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetBrokerCredentialsRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Set broker's credentials
       tags:
       - Brokers
   /devices:

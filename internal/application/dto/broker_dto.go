@@ -18,8 +18,6 @@ type CreateBrokerRequest struct {
 	KeepAlive *uint16  `json:"keepAlive" binding:"required"`
 	Icon      Icon     `json:"icon" binding:"required"`
 	IsSSL     *bool    `json:"isSsl" binding:"required"`
-	Username  t.String `json:"username" swaggertype:"string"`
-	Password  t.String `json:"password" swaggertype:"string"`
 	ClientID  t.String `json:"clientId" swaggertype:"string"`
 }
 
@@ -34,8 +32,6 @@ type UpdateBrokerRequest struct {
 	KeepAlive t.Uint16     `json:"keepAlive" swaggertype:"integer"`
 	Icon      IconOptional `json:"icon"`
 	IsSSL     t.Bool       `json:"isSsl" swaggertype:"boolean"`
-	Username  t.String     `json:"username" swaggertype:"string"`
-	Password  t.String     `json:"password" swaggertype:"string"`
 	ClientID  t.String     `json:"clientId" swaggertype:"string"`
 }
 
@@ -56,4 +52,9 @@ type GetBrokerCredentialsResponse struct {
 	ID       uuid.UUID `json:"id" format:"uuid"`
 	Username *string   `json:"username"`
 	Password *string   `json:"password"`
+}
+
+type SetBrokerCredentialsRequest struct {
+	Username t.String `json:"username" binding:"requirednullstring" swaggertype:"string"`
+	Password t.String `json:"password" binding:"requirednullstring" swaggertype:"string"`
 }

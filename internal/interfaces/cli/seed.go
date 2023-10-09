@@ -40,53 +40,69 @@ func Seed(c *config.Config) {
 		UserID:              uid1,
 		Name:                "Test Devices",
 		Port:                8884,
-		Username:            t.NewString("test01", false, true),
 		IsSSL:               true,
-		Password:            t.NewString("test01", false, true),
 		ClientID:            t.NewString("123", false, true),
 		KeepAlive:           60,
 		IconName:            "Home",
 		IconBackgroundColor: "#ff00ff",
 		Server:              "broker.hivemq.com",
+	})
+	app.BrokerSrv.SetCredentials(ctx, &domain.UpdateBroker{
+		UserID:   uid1,
+		ID:       bid1,
+		Username: t.NewString("test01", false, true),
+		Password: t.NewString("test01", false, true),
 	})
 	bid2, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid1,
 		Name:                "Home Devices",
 		Port:                8884,
-		Username:            t.NewString("admin", false, true),
 		IsSSL:               true,
-		Password:            t.NewString("Admin123", false, true),
 		ClientID:            t.NewString("Admin123", false, true),
 		KeepAlive:           10,
 		IconName:            "Home",
 		IconBackgroundColor: "#aa00ff",
 		Server:              "ef57f832f11b4e89960ef452f56e6aa3.s2.eu.hivemq.cloud",
 	})
+	app.BrokerSrv.SetCredentials(ctx, &domain.UpdateBroker{
+		UserID:   uid1,
+		ID:       bid2,
+		Username: t.NewString("admin", false, true),
+		Password: t.NewString("Admin123", false, true),
+	})
 	bid3, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid2,
 		Name:                "Test Devices",
 		Port:                8884,
-		Username:            t.NewString("test01", false, true),
 		IsSSL:               true,
-		Password:            t.NewString("test01", false, true),
 		ClientID:            t.NewString("123", false, true),
 		KeepAlive:           60,
 		IconName:            "Home",
 		IconBackgroundColor: "#ff00ff",
 		Server:              "broker.hivemq.com",
 	})
+	app.BrokerSrv.SetCredentials(ctx, &domain.UpdateBroker{
+		UserID:   uid2,
+		ID:       bid3,
+		Username: t.NewString("test01", false, true),
+		Password: t.NewString("test01", false, true),
+	})
 	bid4, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid2,
 		Name:                "Home Devices",
 		Port:                8884,
-		Username:            t.NewString("admin", false, true),
 		IsSSL:               true,
-		Password:            t.NewString("Admin123", false, true),
 		ClientID:            t.NewString("Admin123", false, true),
 		KeepAlive:           10,
 		IconName:            "Home",
 		IconBackgroundColor: "#aa00ff",
 		Server:              "ef57f832f11b4e89960ef452f56e6aa3.s2.eu.hivemq.cloud",
+	})
+	app.BrokerSrv.SetCredentials(ctx, &domain.UpdateBroker{
+		UserID:   uid2,
+		ID:       bid4,
+		Username: t.NewString("admin", false, true),
+		Password: t.NewString("Admin123", false, true),
 	})
 
 	did1, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{

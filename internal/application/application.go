@@ -34,6 +34,7 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client) *Application
 		v.RegisterValidation("control_attributes", validate.ControlAttributes)
 		v.RegisterValidation("control_type", validate.ControlType)
 		v.RegisterValidation("qos_level", validate.QoSLevel)
+		v.RegisterValidation("requirednullstring", validate.RequiredNullString)
 	}
 
 	userRepo := persistance.NewUserRepository(d)
@@ -42,9 +43,10 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client) *Application
 	controlRepo := persistance.NewDeviceControlRepository(d)
 	tokenRepo := cache.NewTokenRepository(ch)
 
+	cryptoSrv := NewCryptoService()
 	authSrv := NewRESTAuthService(c, tokenRepo)
 	userSrv := NewUserService(c, userRepo, authSrv)
-	brokerSrv := NewBrokerService(brokerRepo)
+	brokerSrv := NewBrokerService(c, brokerRepo, cryptoSrv)
 	deviceSrv := NewDeviceService(deviceRepo, brokerSrv)
 	controlSrv := NewDeviceControlService(controlRepo, deviceSrv)
 
