@@ -54,7 +54,7 @@ func (h *userHandler) Register(ctx *gin.Context) {
 
 	_, err := h.us.Create(ctx, h.m.CreateDTOToCreateModel(body))
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrEmailExists) {
 			code = http.StatusConflict
 		} else {
@@ -89,12 +89,11 @@ func (h *userHandler) Login(ctx *gin.Context) {
 
 	tokens, err := h.us.Login(ctx, h.m.LoginDTOToModel(body))
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrUserNotFound) {
 			code = http.StatusNotFound
 		} else if errors.Is(err, ae.ErrInvalidPassword) {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
-			return
+			code = http.StatusBadRequest
 		}
 
 		ctx.AbortWithStatusJSON(code, ae.NewHTTPError(err))
@@ -197,7 +196,7 @@ func (h *userHandler) Update(ctx *gin.Context) {
 
 	err = h.us.Update(ctx, user)
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrEmailExists) {
 			code = http.StatusConflict
 		} else {
