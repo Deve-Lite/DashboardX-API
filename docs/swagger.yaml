@@ -43,6 +43,7 @@ definitions:
     properties:
       clientId:
         type: string
+        nullable: true
       icon:
         $ref: '#/definitions/dto.Icon'
       isSsl:
@@ -289,8 +290,10 @@ definitions:
     properties:
       password:
         type: string
+        nullable: true
       username:
         type: string
+        nullable: true
     type: object
   dto.Tokens:
     properties:
@@ -303,6 +306,7 @@ definitions:
     properties:
       clientId:
         type: string
+        nullable: true
       icon:
         $ref: '#/definitions/dto.IconOptional'
       isSsl:
@@ -343,15 +347,18 @@ definitions:
     properties:
       basePath:
         type: string
+        nullable: true
       brokerId:
         format: uuid
         type: string
+        nullable: true
       icon:
         $ref: '#/definitions/dto.IconOptional'
       name:
         type: string
       placing:
         type: string
+        nullable: true
     type: object
   dto.UpdateUserRequest:
     properties:
@@ -1277,3 +1284,4 @@ securityDefinitions:
     name: Authorization
     type: apiKey
 swagger: "2.0"
+

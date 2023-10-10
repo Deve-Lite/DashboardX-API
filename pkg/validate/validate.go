@@ -15,7 +15,7 @@ import (
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
-var NullMin validator.Func = func(fl validator.FieldLevel) bool {
+var EmptyMin validator.Func = func(fl validator.FieldLevel) bool {
 	v1, ok1 := fl.Field().Interface().(t.String)
 	if ok1 {
 		if err := validate.Var(v1.String, fmt.Sprintf("omitempty,min=%s", fl.Param())); err != nil {
@@ -37,7 +37,7 @@ var NullMin validator.Func = func(fl validator.FieldLevel) bool {
 	return false
 }
 
-var NullEmail validator.Func = func(fl validator.FieldLevel) bool {
+var EmptyEmail validator.Func = func(fl validator.FieldLevel) bool {
 	v, ok := fl.Field().Interface().(t.String)
 	if !ok {
 		return false
@@ -50,7 +50,7 @@ var NullEmail validator.Func = func(fl validator.FieldLevel) bool {
 	return true
 }
 
-var NullUUID validator.Func = func(fl validator.FieldLevel) bool {
+var EmptyUUID validator.Func = func(fl validator.FieldLevel) bool {
 	v, ok := fl.Field().Interface().(uuid.NullUUID)
 	if !ok {
 		return false
@@ -63,7 +63,7 @@ var NullUUID validator.Func = func(fl validator.FieldLevel) bool {
 	return true
 }
 
-var NullHexColor validator.Func = func(fl validator.FieldLevel) bool {
+var EmptyHexColor validator.Func = func(fl validator.FieldLevel) bool {
 	v, ok := fl.Field().Interface().(t.String)
 	if !ok {
 		return false

@@ -1448,7 +1448,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "clientId": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                 },
                 "icon": {
                     "$ref": "#/definitions/dto.Icon"
@@ -1800,10 +1801,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                 }
             }
         },
@@ -1822,7 +1825,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "clientId": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                 },
                 "icon": {
                     "$ref": "#/definitions/dto.IconOptional"
@@ -1883,11 +1887,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "basePath": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                 },
                 "brokerId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "nullable": true
                 },
                 "icon": {
                     "$ref": "#/definitions/dto.IconOptional"
@@ -1896,7 +1902,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "placing": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                 }
             }
         },
@@ -1988,3 +1995,4 @@ var SwaggerInfo = &swag.Spec{
 func init() {
 	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
 }
+

@@ -9,5 +9,5 @@ type Icon struct {
 
 type IconOptional struct {
 	Name            t.String `json:"name" swaggertype:"string"`
-	BackgroundColor t.String `json:"backgroundColor" binding:"nullhexcolor" swaggertype:"string"`
+	BackgroundColor t.String `json:"backgroundColor" binding:"emptyhexcolor" swaggertype:"string"`
 }

@@ -21,7 +21,7 @@ type DeviceControlParams struct {
 }
 
 type CreateDeviceRequest struct {
-	BrokerID uuid.NullUUID `json:"brokerId" binding:"nulluuid" swaggertype:"string" format:"uuid"`
+	BrokerID uuid.NullUUID `json:"brokerId" binding:"emptyuuid" swaggertype:"string" format:"uuid"`
 	Name     string        `json:"name" binding:"required"`
 	Icon     Icon          `json:"icon" binding:"required"`
 	Placing  t.String      `json:"placing" swaggertype:"string"`
@@ -33,11 +33,11 @@ type CreateDeviceResponse struct {
 }
 
 type UpdateDeviceRequest struct {
-	BrokerID t.Nullable[uuid.UUID] `json:"brokerId" swaggertype:"string" format:"uuid"`
+	BrokerID t.Nullable[uuid.UUID] `json:"brokerId" swaggertype:"string" format:"uuid" extensions:"x-nullable"`
 	Name     t.String              `json:"name" swaggertype:"string"`
 	Icon     IconOptional          `json:"icon"`
-	Placing  t.String              `json:"placing" swaggertype:"string"`
-	BasePath t.String              `json:"basePath" swaggertype:"string"`
+	Placing  t.String              `json:"placing" swaggertype:"string" extensions:"x-nullable"`
+	BasePath t.String              `json:"basePath" swaggertype:"string" extensions:"x-nullable"`
 }
 
 type GetDeviceResponse struct {
