@@ -35,8 +35,8 @@ type GetUserResponse struct {
 }
 
 type UpdateUserRequest struct {
-	Name     t.String `json:"name" binding:"nullmin=3" swaggertype:"string"`
-	Email    t.String `json:"email" binding:"nullemail" swaggertype:"string"`
+	Name     t.String `json:"name" binding:"emptymin=3" swaggertype:"string"`
+	Email    t.String `json:"email" binding:"emptyemail" swaggertype:"string"`
 	Theme    t.String `json:"theme" swaggertype:"string"`
 	Language t.String `json:"language" swaggertype:"string"`
 }

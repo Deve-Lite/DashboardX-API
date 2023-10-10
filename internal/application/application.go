@@ -27,10 +27,10 @@ type Application struct {
 
 func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client) *Application {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("nullmin", validate.NullMin)
-		v.RegisterValidation("nullemail", validate.NullEmail)
-		v.RegisterValidation("nulluuid", validate.NullUUID)
-		v.RegisterValidation("nullhexcolor", validate.NullHexColor)
+		v.RegisterValidation("emptymin", validate.EmptyMin)
+		v.RegisterValidation("emptyemail", validate.EmptyEmail)
+		v.RegisterValidation("emptyuuid", validate.EmptyEmail)
+		v.RegisterValidation("emptyhexcolor", validate.EmptyHexColor)
 		v.RegisterValidation("control_attributes", validate.ControlAttributes)
 		v.RegisterValidation("control_type", validate.ControlType)
 		v.RegisterValidation("qos_level", validate.QoSLevel)

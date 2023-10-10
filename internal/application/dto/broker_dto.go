@@ -18,7 +18,7 @@ type CreateBrokerRequest struct {
 	KeepAlive *uint16  `json:"keepAlive" binding:"required"`
 	Icon      Icon     `json:"icon" binding:"required"`
 	IsSSL     *bool    `json:"isSsl" binding:"required"`
-	ClientID  t.String `json:"clientId" swaggertype:"string"`
+	ClientID  t.String `json:"clientId" swaggertype:"string" extensions:"x-nullable"`
 }
 
 type CreateBrokerResponse struct {
@@ -32,7 +32,7 @@ type UpdateBrokerRequest struct {
 	KeepAlive t.Uint16     `json:"keepAlive" swaggertype:"integer"`
 	Icon      IconOptional `json:"icon"`
 	IsSSL     t.Bool       `json:"isSsl" swaggertype:"boolean"`
-	ClientID  t.String     `json:"clientId" swaggertype:"string"`
+	ClientID  t.String     `json:"clientId" swaggertype:"string" extensions:"x-nullable"`
 }
 
 type GetBrokerResponse struct {
@@ -55,6 +55,6 @@ type GetBrokerCredentialsResponse struct {
 }
 
 type SetBrokerCredentialsRequest struct {
-	Username t.String `json:"username" binding:"requirednullstring" swaggertype:"string"`
-	Password t.String `json:"password" binding:"requirednullstring" swaggertype:"string"`
+	Username t.String `json:"username" binding:"requirednullstring" swaggertype:"string" extensions:"x-nullable"`
+	Password t.String `json:"password" binding:"requirednullstring" swaggertype:"string" extensions:"x-nullable"`
 }
