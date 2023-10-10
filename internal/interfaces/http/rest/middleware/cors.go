@@ -7,7 +7,7 @@ import (
 )
 
 func CORS(ctx *gin.Context) {
-	ctx.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+	ctx.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
 	ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	ctx.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	ctx.Writer.Header().Set("Content-Type", "application/json")
