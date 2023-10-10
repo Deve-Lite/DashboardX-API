@@ -63,7 +63,7 @@ func (h *brokerHandler) Get(ctx *gin.Context) {
 	var broker *domain.Broker
 	broker, err = h.bs.Get(ctx, brokerID, userID)
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrBrokerNotFound) {
 			code = http.StatusNotFound
 		} else {
@@ -206,7 +206,7 @@ func (h *brokerHandler) Update(ctx *gin.Context) {
 
 	err = h.bs.Update(ctx, broker)
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrBrokerNotFound) {
 			code = http.StatusNotFound
 		} else if errors.Is(err, ae.ErrBrokerServerExists) {
@@ -252,7 +252,7 @@ func (h *brokerHandler) Delete(ctx *gin.Context) {
 
 	err = h.bs.Delete(ctx, brokerID, userID)
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrBrokerNotFound) {
 			code = http.StatusNotFound
 		} else {
@@ -297,7 +297,7 @@ func (h *brokerHandler) GetCredentials(ctx *gin.Context) {
 	var broker *domain.Broker
 	broker, err = h.bs.GetCredentials(ctx, brokerID, userID)
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrBrokerNotFound) {
 			code = http.StatusNotFound
 		} else {
@@ -352,7 +352,7 @@ func (h *brokerHandler) SetCredentials(ctx *gin.Context) {
 
 	err = h.bs.SetCredentials(ctx, broker)
 	if err != nil {
-		var code int
+		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrBrokerNotFound) {
 			code = http.StatusNotFound
 		} else {
