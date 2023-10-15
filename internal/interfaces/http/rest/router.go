@@ -1,8 +1,8 @@
 package rest
 
 import (
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/handler"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/http/rest/middleware"
+	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/handler"
+	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/middleware"
 	"github.com/gin-gonic/gin"
 )
 

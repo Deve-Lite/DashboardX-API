@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/enum"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/google/uuid"
 )
 

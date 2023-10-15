@@ -3,8 +3,8 @@ package application
 import (
 	"context"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
 	"github.com/google/uuid"
 )
 

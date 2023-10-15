@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
+	"github.com/Deve-Lite/DashboardX-API/internal/application"
 	"github.com/go-playground/assert"
 )
 

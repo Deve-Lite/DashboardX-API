@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/interfaces/cli"
-	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/postgres"
+	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/cli"
+	"github.com/Deve-Lite/DashboardX-API/pkg/postgres"
 )
 
 func main() {

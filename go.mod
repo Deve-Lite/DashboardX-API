@@ -1,4 +1,4 @@
-module github.com/Deve-Lite/DashboardX-API-PoC
+module github.com/Deve-Lite/DashboardX-API
 
 go 1.21
 

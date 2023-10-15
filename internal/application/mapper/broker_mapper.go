@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 )
 
 type BrokerMapper interface {

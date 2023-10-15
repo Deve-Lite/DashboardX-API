@@ -1,6 +1,6 @@
 package dto
 
-import t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
+import t "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 
 type Icon struct {
 	Name            string `json:"name" binding:"required"`

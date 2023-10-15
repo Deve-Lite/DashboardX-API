@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
