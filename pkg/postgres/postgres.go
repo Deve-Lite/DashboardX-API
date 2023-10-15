@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
+	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/golang-migrate/migrate"
 	"github.com/jmoiron/sqlx"
 

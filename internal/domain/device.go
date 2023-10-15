@@ -3,7 +3,7 @@ package domain
 import (
 	"time"
 
-	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
+	t "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 	"github.com/google/uuid"
 )
 

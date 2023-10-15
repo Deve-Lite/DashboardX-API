@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
+	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/redis/go-redis/v9"
 )
 

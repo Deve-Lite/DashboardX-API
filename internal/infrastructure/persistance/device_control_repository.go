@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
-	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
+	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"

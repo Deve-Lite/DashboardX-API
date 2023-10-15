@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	n "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	n "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 )
 
 type UserMapper interface {

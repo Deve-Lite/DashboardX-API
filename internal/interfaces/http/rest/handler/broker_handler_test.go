@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	n "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
-	"github.com/Deve-Lite/DashboardX-API-PoC/test"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	n "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
+	"github.com/Deve-Lite/DashboardX-API/test"
 	"github.com/go-playground/assert"
 	"github.com/google/uuid"
 )

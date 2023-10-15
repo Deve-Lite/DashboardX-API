@@ -3,13 +3,13 @@ package cli
 import (
 	"context"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/enum"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
-	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/postgres"
-	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/redis"
+	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/application"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	t "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
+	"github.com/Deve-Lite/DashboardX-API/pkg/postgres"
+	"github.com/Deve-Lite/DashboardX-API/pkg/redis"
 	"github.com/google/uuid"
 )
 

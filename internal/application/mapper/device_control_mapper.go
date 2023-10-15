@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"unicode"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/enum"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 )
 
 type DeviceControlMapper interface {

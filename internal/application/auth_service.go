@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
-	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
+	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
+	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )

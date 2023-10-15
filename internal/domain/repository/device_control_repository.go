@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	"github.com/google/uuid"
 )
 

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/mapper"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
+	"github.com/Deve-Lite/DashboardX-API/internal/application"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/mapper"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

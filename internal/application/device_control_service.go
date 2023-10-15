@@ -3,10 +3,10 @@ package application
 import (
 	"context"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/enum"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
-	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
+	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/google/uuid"
 )
 

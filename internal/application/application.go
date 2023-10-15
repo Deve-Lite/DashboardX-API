@@ -1,11 +1,11 @@
 package application
 
 import (
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/mapper"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/infrastructure/cache"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/infrastructure/persistance"
-	"github.com/Deve-Lite/DashboardX-API-PoC/pkg/validate"
+	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/mapper"
+	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/cache"
+	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/persistance"
+	"github.com/Deve-Lite/DashboardX-API/pkg/validate"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"

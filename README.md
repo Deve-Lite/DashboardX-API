@@ -1,4 +1,4 @@
-# DashboardX-API-PoC
+# DashboardX-API
 
 ## Setup
 

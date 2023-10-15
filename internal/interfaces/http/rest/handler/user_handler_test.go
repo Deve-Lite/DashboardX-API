@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/test"
+	"github.com/Deve-Lite/DashboardX-API/test"
 	"github.com/go-playground/assert"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

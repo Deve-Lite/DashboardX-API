@@ -3,12 +3,12 @@ package application
 import (
 	"context"
 
-	"github.com/Deve-Lite/DashboardX-API-PoC/config"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/application/dto"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain"
-	"github.com/Deve-Lite/DashboardX-API-PoC/internal/domain/repository"
-	ae "github.com/Deve-Lite/DashboardX-API-PoC/pkg/errors"
-	t "github.com/Deve-Lite/DashboardX-API-PoC/pkg/nullable"
+	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain"
+	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
+	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
+	t "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
