@@ -133,15 +133,7 @@ func TestUserLogin(t *testing.T) {
 	defer tt.Teardown()
 	g, a := tt.SetupApp()
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/api/v1/users/register", strings.NewReader(`
-		{
-			"name": "login-user",
-			"email": "new-login@test.com",
-			"password": "secretpassword"
-		}
-	`))
-	g.ServeHTTP(w, req)
+	tt.CreateUser(a, "login-user", "secretpassword", "new-login@test.com")
 
 	t.Run("should return 200 when a user has been logged in", func(t *testing.T) {
 		p := strings.NewReader(`
@@ -211,7 +203,7 @@ func TestUserLogin(t *testing.T) {
 		}
 
 		if claims, ok := token1.Claims.(jwt.MapClaims); ok {
-			user1ID = uuid.MustParse(claims["iss"].(string))
+			user1ID = uuid.MustParse(claims["sub"].(string))
 			isAdmin1 = claims["is_admin"].(bool)
 		}
 
@@ -229,7 +221,7 @@ func TestUserLogin(t *testing.T) {
 		}
 
 		if claims, ok := token2.Claims.(jwt.MapClaims); ok {
-			user2ID = uuid.MustParse(claims["iss"].(string))
+			user2ID = uuid.MustParse(claims["sub"].(string))
 			isAdmin2 = claims["is_admin"].(bool)
 		}
 
@@ -367,7 +359,7 @@ func TestUserRefresh(t *testing.T) {
 		}
 
 		if claims, ok := token1.Claims.(jwt.MapClaims); ok {
-			user1ID = uuid.MustParse(claims["iss"].(string))
+			user1ID = uuid.MustParse(claims["sub"].(string))
 			isAdmin1 = claims["is_admin"].(bool)
 		}
 
@@ -385,7 +377,7 @@ func TestUserRefresh(t *testing.T) {
 		}
 
 		if claims, ok := token2.Claims.(jwt.MapClaims); ok {
-			user2ID = uuid.MustParse(claims["iss"].(string))
+			user2ID = uuid.MustParse(claims["sub"].(string))
 			isAdmin2 = claims["is_admin"].(bool)
 		}
 

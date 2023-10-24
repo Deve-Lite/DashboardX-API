@@ -11,6 +11,7 @@ import (
 	t "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,20 +19,24 @@ type UserService interface {
 	Login(ctx context.Context, user *domain.User) (*dto.Tokens, error)
 	Refresh(ctx context.Context, userID uuid.UUID) (*dto.Tokens, error)
 	Get(ctx context.Context, userID uuid.UUID) (*domain.User, error)
-	Create(ctx context.Context, user *domain.CreateUser) (uuid.UUID, error)
+	PreCreate(ctx context.Context, user *domain.CreateUser) (uuid.UUID, error)
+	Create(ctx context.Context, preUserID uuid.UUID) (uuid.UUID, error)
 	Update(ctx context.Context, user *domain.UpdateUser) error
 	Delete(ctx context.Context, userID uuid.UUID) error
 	Verify(ctx context.Context, userID uuid.UUID, password string) error
+	ResendConfirm(ctx context.Context, email string) error
 }
 
 type userService struct {
-	c  *config.Config
-	ur repository.UserRepository
-	a  RESTAuthService
+	c   *config.Config
+	pur repository.PreUserRepository
+	ur  repository.UserRepository
+	as  RESTAuthService
+	ms  MailService
 }
 
-func NewUserService(c *config.Config, ur repository.UserRepository, a RESTAuthService) UserService {
-	return &userService{c, ur, a}
+func NewUserService(c *config.Config, pur repository.PreUserRepository, ur repository.UserRepository, as RESTAuthService, ms MailService) UserService {
+	return &userService{c, pur, ur, as, ms}
 }
 
 func (u *userService) Login(ctx context.Context, user *domain.User) (*dto.Tokens, error) {
@@ -39,6 +44,10 @@ func (u *userService) Login(ctx context.Context, user *domain.User) (*dto.Tokens
 	var err error
 	found, err = u.ur.GetByEmail(ctx, user.Email)
 	if err != nil {
+		if b, _ := u.pur.ExistsByEmail(ctx, user.Email); b {
+			return nil, ae.ErrConfirmationRequired
+		}
+
 		return nil, err
 	}
 
@@ -47,7 +56,7 @@ func (u *userService) Login(ctx context.Context, user *domain.User) (*dto.Tokens
 		return nil, ae.ErrInvalidPassword
 	}
 
-	tokens, err := u.a.GenerateTokens(ctx, found)
+	tokens, err := u.as.GenerateTokens(ctx, found)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +72,7 @@ func (u *userService) Refresh(ctx context.Context, userID uuid.UUID) (*dto.Token
 		return nil, err
 	}
 
-	tokens, err := u.a.GenerateTokens(ctx, user)
+	tokens, err := u.as.GenerateTokens(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -75,15 +84,55 @@ func (u *userService) Get(ctx context.Context, userID uuid.UUID) (*domain.User, 
 	return u.ur.Get(ctx, userID)
 }
 
-func (u *userService) Create(ctx context.Context, user *domain.CreateUser) (uuid.UUID, error) {
+func (u *userService) PreCreate(ctx context.Context, user *domain.CreateUser) (uuid.UUID, error) {
+	if u.ur.ExistsByEmail(ctx, user.Email) {
+		return uuid.Nil, ae.ErrEmailExists
+	} else {
+		if b, _ := u.pur.ExistsByEmail(ctx, user.Email); b {
+			return uuid.Nil, ae.ErrEmailExists
+		}
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), int(u.c.Crytpo.HashCost))
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "userService.Create.GenerateFromPassword")
+		return uuid.Nil, errors.Wrap(err, "userService.PreCreate.GenerateFromPassword")
 	}
 
 	user.Password = string(hash)
 
-	return u.ur.Create(ctx, user)
+	preUserID, err := u.pur.Set(ctx, user, u.c.JWT.ConfirmLifespanHours)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "userService.PreCreate.SetPreUser")
+	}
+
+	token, err := u.as.GenerateConfirmToken(ctx, preUserID)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "userService.PreCreate.GenerateConfirmToken")
+	}
+
+	go u.ms.SendConfirmAccount(user.Email, token)
+
+	return preUserID, nil
+}
+
+func (u *userService) Create(ctx context.Context, preUserID uuid.UUID) (uuid.UUID, error) {
+	preUser, err := u.pur.Get(ctx, preUserID)
+	if err != nil {
+		return uuid.Nil, ae.ErrNoAwaitingConfirm
+	}
+
+	userID, err := u.ur.Create(ctx, preUser)
+	if err != nil {
+		return uuid.Nil, ae.ErrUserCreation
+	}
+
+	if err := u.pur.Delete(ctx, preUserID); err != nil {
+		go u.ur.Delete(ctx, userID)
+
+		return uuid.Nil, ae.ErrUserCreation
+	}
+
+	return userID, nil
 }
 
 func (u *userService) Update(ctx context.Context, user *domain.UpdateUser) error {
@@ -115,6 +164,25 @@ func (u *userService) Verify(ctx context.Context, userID uuid.UUID, password str
 	if err != nil {
 		return ae.ErrInvalidPassword
 	}
+
+	return nil
+}
+
+func (u *userService) ResendConfirm(ctx context.Context, email string) error {
+	preUserID, err := u.pur.GetByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return ae.ErrNoAwaitingConfirm
+		}
+		return err
+	}
+
+	token, err := u.as.GenerateConfirmToken(ctx, preUserID)
+	if err != nil {
+		return errors.Wrap(err, "userService.ResendConfirm.GenerateConfirmToken")
+	}
+
+	go u.ms.SendConfirmAccount(email, token)
 
 	return nil
 }

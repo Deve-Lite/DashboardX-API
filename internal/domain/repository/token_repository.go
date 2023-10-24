@@ -8,7 +8,7 @@ import (
 )
 
 type TokenRepository interface {
-	SetRefresh(ctx context.Context, token *domain.Token) error
-	GetRefresh(ctx context.Context, userID uuid.UUID) (string, error)
-	DeleteRefresh(ctx context.Context, userID uuid.UUID) error
+	Set(ctx context.Context, token *domain.Token) error
+	Get(ctx context.Context, userID uuid.UUID) (string, error)
+	Delete(ctx context.Context, userID uuid.UUID) error
 }

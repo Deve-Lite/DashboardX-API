@@ -8,6 +8,10 @@ param (
 docker compose rm -vfs
 docker rmi -f dashboardx-api-app
 
+docker volume rm dashboardx-api_postgres-data
+docker volume rm dashboardx-api_redis-data
+docker volume rm dashboardx-api_smtp4dev-data
+
 if ($Prune) {
     docker system prune --all --force
 } 

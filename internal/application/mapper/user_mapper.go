@@ -43,8 +43,8 @@ func (*userMapper) CreateDTOToCreateModel(v *dto.CreateUserRequest) *domain.Crea
 		Password: v.Password,
 		Email:    v.Email,
 		IsAdmin:  false,
-		Language: nil,
-		Theme:    nil,
+		Language: "",
+		Theme:    "",
 	}
 }
 

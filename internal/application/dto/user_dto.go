@@ -49,3 +49,7 @@ type ChangeUserPasswordRequest struct {
 type DeleteUserRequest struct {
 	Password string `json:"password" binding:"required,min=6" swaggertype:"string"`
 }
+
+type ResendConfirmUserRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
