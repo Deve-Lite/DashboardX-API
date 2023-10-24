@@ -16,12 +16,12 @@ type User struct {
 }
 
 type CreateUser struct {
-	Name     string  `db:"name"`
-	Password string  `db:"password"`
-	Email    string  `db:"email"`
-	IsAdmin  bool    `db:"is_admin"`
-	Language *string `db:"language"`
-	Theme    *string `db:"theme"`
+	Name     string `db:"name" redis:"name"`
+	Password string `db:"password" redis:"password"`
+	Email    string `db:"email" redis:"email"`
+	IsAdmin  bool   `db:"is_admin" redis:"is_admin"`
+	Language string `db:"language" redis:"language"`
+	Theme    string `db:"theme" redis:"theme"`
 }
 
 type UpdateUser struct {

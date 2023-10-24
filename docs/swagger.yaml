@@ -286,6 +286,13 @@ definitions:
     - email
     - password
     type: object
+  dto.ResendConfirmUserRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   dto.SetBrokerCredentialsRequest:
     properties:
       password:
@@ -1044,6 +1051,70 @@ paths:
       summary: Update a device control
       tags:
       - Devices
+  /users/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Requires a valid confirm token sent in the Authorization header
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Confirm a newly registered account
+      tags:
+      - Users
+  /users/confirm/resend:
+    post:
+      consumes:
+      - application/json
+      description: Sends a token to provided mailbox, if the account awaits to be
+        confirmed
+      parameters:
+      - description: ResendConfirm input
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResendConfirmUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Send a new token to confirm an account
+      tags:
+      - Users
   /users/login:
     post:
       consumes:
@@ -1068,6 +1139,10 @@ paths:
             $ref: '#/definitions/errors.HTTPError'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/errors.HTTPError'
         "500":

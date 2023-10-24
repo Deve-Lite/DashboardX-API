@@ -19,8 +19,12 @@ func NewTokenRepository(ch *redis.Client) repository.TokenRepository {
 	return &tokenRepository{ch}
 }
 
-func (r *tokenRepository) GetRefresh(ctx context.Context, userID uuid.UUID) (string, error) {
-	v, err := r.ch.Get(ctx, fmt.Sprintf("refresh/%s", userID)).Result()
+func (*tokenRepository) key(userID uuid.UUID) string {
+	return fmt.Sprintf("refresh:%s", userID.String())
+}
+
+func (r *tokenRepository) Get(ctx context.Context, userID uuid.UUID) (string, error) {
+	v, err := r.ch.Get(ctx, r.key(userID)).Result()
 	if err != nil {
 		return "", err
 	}
@@ -28,8 +32,8 @@ func (r *tokenRepository) GetRefresh(ctx context.Context, userID uuid.UUID) (str
 	return v, nil
 }
 
-func (r *tokenRepository) SetRefresh(ctx context.Context, token *domain.Token) error {
-	err := r.ch.Set(ctx, fmt.Sprintf("refresh/%s", token.UserID), token.Refresh, time.Duration(token.ExpirationHours*float32(time.Hour))).Err()
+func (r *tokenRepository) Set(ctx context.Context, token *domain.Token) error {
+	err := r.ch.Set(ctx, r.key(token.UserID), token.Refresh, time.Duration(token.ExpirationHours*float32(time.Hour))).Err()
 	if err != nil {
 		return err
 	}
@@ -37,8 +41,8 @@ func (r *tokenRepository) SetRefresh(ctx context.Context, token *domain.Token) e
 	return nil
 }
 
-func (r *tokenRepository) DeleteRefresh(ctx context.Context, userID uuid.UUID) error {
-	err := r.ch.Del(ctx, fmt.Sprintf("refresh/%s", userID)).Err()
+func (r *tokenRepository) Delete(ctx context.Context, userID uuid.UUID) error {
+	err := r.ch.Del(ctx, r.key(userID)).Err()
 	if err != nil {
 		return err
 	}

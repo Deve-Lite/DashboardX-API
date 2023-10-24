@@ -139,6 +139,29 @@ func Drop(c *config.Config) {
 	log.Printf(`Database "%s" dropped`, c.Postgres.Database)
 }
 
+type Database struct {
+	Name string `db:"datname"`
+}
+
+func Exists(c *config.Config) bool {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
+		c.Postgres.Host,
+		c.Postgres.Port,
+		c.Postgres.User,
+		c.Postgres.Password)
+
+	db, err := sqlx.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Panic("Can not connect to Postgres. Error: ", err)
+	}
+	defer db.Close()
+
+	d := Database{}
+	db.Get(&d, fmt.Sprintf(`SELECT "datname" FROM "pg_catalog"."pg_database" WHERE lower("datname") = lower('%s')`, c.Postgres.Database))
+
+	return strings.EqualFold(d.Name, c.Postgres.Database)
+}
+
 func getMigrationsPath() string {
 	_, b, _, _ := runtime.Caller(0)
 	p := filepath.Join(filepath.Dir(b), "../..", "migrations")

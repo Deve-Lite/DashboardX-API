@@ -14,6 +14,7 @@ func NewDB(c *config.Config) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", c.Redis.Host, c.Redis.Port),
 		Password: c.Redis.Password,
+		DB:       int(c.Redis.Database),
 	})
 
 	ctx := context.Background()
@@ -32,4 +33,21 @@ func NewDB(c *config.Config) *redis.Client {
 
 	log.Print("Redis connected successfully")
 	return client
+}
+
+func FlushDB(c *config.Config) error {
+	client := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", c.Redis.Host, c.Redis.Port),
+		Password: c.Redis.Password,
+		DB:       int(c.Redis.Database),
+	})
+
+	ctx := context.Background()
+	defer ctx.Done()
+
+	if err := client.FlushDB(ctx).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }

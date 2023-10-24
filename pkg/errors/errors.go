@@ -17,11 +17,10 @@ var (
 	ErrMissingParams         = errors.New("no valid properties were provided")
 	ErrInvalidRefreshToken   = errors.New("refresh token is invalid")
 	ErrNoBrokerCredentials   = errors.New("broker credentials are not set")
+	ErrUserCreation          = errors.New("could not create a user")
+	ErrNoAwaitingConfirm     = errors.New("account does not await to be confirmed")
+	ErrConfirmationRequired  = errors.New("email has to be verified")
 )
-
-type AppError struct {
-	InternalError error
-}
 
 type HTTPError struct {
 	Message string `json:"message"`

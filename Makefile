@@ -6,7 +6,7 @@ dev:
 # Runs integration tests locally
 # Postgres & Redis need to be up for tests
 dev-test:
-	@docker compose up -d
+	@docker compose up -d postgres redis smtp4dev
 	
 	@go test -v -timeout 30s \
 		./internal/interfaces/http/rest/handler \
@@ -17,6 +17,10 @@ dev-test:
 setup:
 	@docker compose rm -vfs
 	@docker rmi -f dashboardx-api-app
+
+	@docker volume rm dashboardx-api_postgres-data
+	@docker volume rm dashboardx-api_redis-data
+	@docker volume rm dashboardx-api_smtp4dev-data
 
 	@docker compose build --no-cache
 

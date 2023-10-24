@@ -49,6 +49,12 @@ func NewTest() Test {
 
 	c := config.NewConfig("test.env")
 
+	if postgres.Exists(c) {
+		postgres.Drop(c)
+	}
+
+	redis.FlushDB(c)
+
 	postgres.Create(c)
 	postgres.RunUp(c)
 
@@ -102,11 +108,16 @@ func (t *test) CreateUser(app *application.Application, name string, password st
 	ctx := context.Background()
 	defer ctx.Done()
 
-	userID, err := app.UserSrv.Create(ctx, &domain.CreateUser{
+	preUserID, err := app.UserSrv.PreCreate(ctx, &domain.CreateUser{
 		Name:     name,
 		Password: password,
 		Email:    email,
 	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	userID, err := app.UserSrv.Create(ctx, preUserID)
 	if err != nil {
 		log.Panic(err)
 	}

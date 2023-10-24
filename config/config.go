@@ -9,11 +9,14 @@ import (
 )
 
 type Config struct {
-	Server   *ServerConfig
-	Postgres *PostgresConfig
-	Crytpo   *CryptoConfig
-	JWT      *JWTConfig
-	Redis    *RedisConfig
+	Server      *ServerConfig
+	Postgres    *PostgresConfig
+	Crytpo      *CryptoConfig
+	JWT         *JWTConfig
+	Redis       *RedisConfig
+	SMTP        *SMTPConfig
+	Frontend    *FrontendConfig
+	MailAddress *MailAddressConfig
 }
 
 type ServerConfig struct {
@@ -40,12 +43,33 @@ type JWTConfig struct {
 	AccessLifespanHours  float32 `mapstructure:"JWT_ACCESS_LIFESPAN_HOURS"`
 	RefreshSecret        string  `mapstructure:"JWT_REFRESH_SECRET"`
 	RefreshLifespanHours float32 `mapstructure:"JWT_REFRESH_LIFESPAN_HOURS"`
+	ConfirmSecret        string  `mapstructure:"JWT_CONFIRM_SECRET"`
+	ConfirmLifespanHours float32 `mapstructure:"JWT_CONFIRM_LIFESPAN_HOURS"`
+	ResetSecret          string  `mapstructure:"JWT_RESET_SECRET"`
+	ResetLifespanHours   float32 `mapstructure:"JWT_RESET_LIFESPAN_HOURS"`
 }
 
 type RedisConfig struct {
 	Host     string `mapstructure:"REDIS_HOST"`
 	Port     uint16 `mapstructure:"REDIS_PORT"`
 	Password string `mapstructure:"REDIS_PASSWORD"`
+	Database uint8  `mapstructure:"REDIS_DATABASE"`
+}
+
+type SMTPConfig struct {
+	User     string `mapstructure:"SMTP_USER"`
+	Password string `mapstructure:"SMTP_PASSWORD"`
+	Port     uint8  `mapstructure:"SMTP_PORT"`
+	Host     string `mapstructure:"SMTP_HOST"`
+}
+
+type FrontendConfig struct {
+	ConfirmAccountURL string `mapstructure:"FRONTEND_CONFIRM_ACCOUNT_URL"`
+	ResetPasswordURL  string `mapstructure:"FRONTEND_RESET_PASSWORD_URL"`
+}
+
+type MailAddressConfig struct {
+	Default string `mapstructure:"MAIL_ADDRESS_DEFAULT"`
 }
 
 func loadConfig[T interface{}](v *viper.Viper, c T) *T {
@@ -69,11 +93,14 @@ func NewConfig(filename string) *Config {
 	}
 
 	config := Config{
-		Server:   loadConfig(v, ServerConfig{}),
-		Postgres: loadConfig(v, PostgresConfig{}),
-		Crytpo:   loadConfig(v, CryptoConfig{}),
-		JWT:      loadConfig(v, JWTConfig{}),
-		Redis:    loadConfig(v, RedisConfig{}),
+		Server:      loadConfig(v, ServerConfig{}),
+		Postgres:    loadConfig(v, PostgresConfig{}),
+		Crytpo:      loadConfig(v, CryptoConfig{}),
+		JWT:         loadConfig(v, JWTConfig{}),
+		Redis:       loadConfig(v, RedisConfig{}),
+		SMTP:        loadConfig(v, SMTPConfig{}),
+		Frontend:    loadConfig(v, FrontendConfig{}),
+		MailAddress: loadConfig(v, MailAddressConfig{}),
 	}
 
 	return &config

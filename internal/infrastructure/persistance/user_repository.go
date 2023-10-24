@@ -25,6 +25,17 @@ func NewUserRepository(db *sqlx.DB) repository.UserRepository {
 	return &userRepository{db: db}
 }
 
+func (r *userRepository) ExistsByEmail(ctx context.Context, email string) bool {
+	sqls := `
+		SELECT "id" FROM "users" WHERE "email" = $1
+	`
+
+	var count int
+	r.db.QueryRowxContext(ctx, sqls, email).Scan(&count)
+
+	return count != 0
+}
+
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	user := &domain.User{}
 
@@ -70,14 +81,14 @@ func (r *userRepository) Create(ctx context.Context, user *domain.CreateUser) (u
 	f := `"name", "password", "email", "is_admin"`
 	v := fmt.Sprintf(`'%s', '%s', '%s', %v`, user.Name, user.Password, user.Email, user.IsAdmin)
 
-	if user.Language != nil {
+	if user.Language != "" {
 		f = fmt.Sprintf(`%s, "language"`, f)
-		v = fmt.Sprintf(`%s, '%s'`, v, *user.Language)
+		v = fmt.Sprintf(`%s, '%s'`, v, user.Language)
 	}
 
-	if user.Theme != nil {
+	if user.Theme != "" {
 		f = fmt.Sprintf(`%s, "theme"`, f)
-		v = fmt.Sprintf(`%s, '%s'::"theme"`, v, *user.Theme)
+		v = fmt.Sprintf(`%s, '%s'::"theme"`, v, user.Theme)
 	}
 
 	sql := fmt.Sprintf(`

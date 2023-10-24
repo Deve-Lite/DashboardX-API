@@ -24,17 +24,20 @@ func Seed(c *config.Config) {
 
 	ctx := context.Background()
 
-	uid1, _ := app.UserSrv.Create(ctx, &domain.CreateUser{
+	puid1, _ := app.UserSrv.PreCreate(ctx, &domain.CreateUser{
 		Name:     "psp515",
 		Email:    "psp515@wp.pl",
 		Password: "Admin123!",
 		IsAdmin:  true,
 	})
-	uid2, _ := app.UserSrv.Create(ctx, &domain.CreateUser{
+	puid2, _ := app.UserSrv.PreCreate(ctx, &domain.CreateUser{
 		Name:     "dred",
 		Email:    "dred@gmail.pl",
 		Password: "User123!",
 	})
+
+	uid1, _ := app.UserSrv.Create(ctx, puid1)
+	uid2, _ := app.UserSrv.Create(ctx, puid2)
 
 	bid1, _ := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
 		UserID:              uid1,

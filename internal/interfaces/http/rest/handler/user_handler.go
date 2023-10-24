@@ -17,6 +17,8 @@ import (
 type UserHandler interface {
 	Register(ctx *gin.Context)
 	Refresh(ctx *gin.Context)
+	Confirm(ctx *gin.Context)
+	ResendConfirm(ctx *gin.Context)
 	Login(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Update(ctx *gin.Context)
@@ -52,7 +54,7 @@ func (h *userHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	_, err := h.us.Create(ctx, h.m.CreateDTOToCreateModel(body))
+	_, err := h.us.PreCreate(ctx, h.m.CreateDTOToCreateModel(body))
 	if err != nil {
 		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrEmailExists) {
@@ -68,6 +70,79 @@ func (h *userHandler) Register(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
+// UserConfirm godoc
+//
+//	@Summary		Confirm a newly registered account
+//	@Description	Requires a valid confirm token sent in the Authorization header
+//	@Security		BearerAuth
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		201
+//	@Failure		400	{object}	errors.HTTPError
+//	@Failure		401	{object}	errors.HTTPError
+//	@Failure		409	{object}	errors.HTTPError
+//	@Failure		500	{object}	errors.HTTPError
+//	@Router			/users/confirm [post]
+func (h *userHandler) Confirm(ctx *gin.Context) {
+	preUserID, err := h.getUserID(ctx)
+	if err != nil {
+		return
+	}
+
+	_, err = h.us.Create(ctx, preUserID)
+	if err != nil {
+		code := http.StatusInternalServerError
+		if errors.Is(err, ae.ErrUserCreation) {
+			code = http.StatusBadRequest
+		} else if errors.Is(err, ae.ErrNoAwaitingConfirm) {
+			code = http.StatusConflict
+		} else {
+			code = http.StatusInternalServerError
+		}
+
+		ctx.AbortWithStatusJSON(code, ae.NewHTTPError(err))
+		return
+	}
+
+	ctx.Status(http.StatusCreated)
+}
+
+// UserResendConfirm godoc
+//
+//	@Summary		Send a new token to confirm an account
+//	@Description	Sends a token to provided mailbox, if the account awaits to be confirmed
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			data	body	dto.ResendConfirmUserRequest	true	"ResendConfirm input"
+//	@Success		204
+//	@Failure		400	{object}	errors.HTTPError
+//	@Failure		409	{object}	errors.HTTPError
+//	@Failure		500	{object}	errors.HTTPError
+//	@Router			/users/confirm/resend [post]
+func (h *userHandler) ResendConfirm(ctx *gin.Context) {
+	body := &dto.ResendConfirmUserRequest{}
+	if err := ctx.ShouldBindJSON(body); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
+		return
+	}
+
+	if err := h.us.ResendConfirm(ctx, body.Email); err != nil {
+		code := http.StatusInternalServerError
+		if errors.Is(err, ae.ErrNoAwaitingConfirm) {
+			code = http.StatusConflict
+		} else {
+			code = http.StatusInternalServerError
+		}
+
+		ctx.AbortWithStatusJSON(code, ae.NewHTTPError(err))
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
 // UserLogin godoc
 //
 //	@Summary	Login a user
@@ -78,6 +153,7 @@ func (h *userHandler) Register(ctx *gin.Context) {
 //	@Success	200		{object}	dto.Tokens
 //	@Failure	400		{object}	errors.HTTPError
 //	@Failure	404		{object}	errors.HTTPError
+//	@Failure	409		{object}	errors.HTTPError
 //	@Failure	500		{object}	errors.HTTPError
 //	@Router		/users/login [post]
 func (h *userHandler) Login(ctx *gin.Context) {
@@ -94,6 +170,8 @@ func (h *userHandler) Login(ctx *gin.Context) {
 			code = http.StatusNotFound
 		} else if errors.Is(err, ae.ErrInvalidPassword) {
 			code = http.StatusBadRequest
+		} else if errors.Is(err, ae.ErrConfirmationRequired) {
+			code = http.StatusConflict
 		}
 
 		ctx.AbortWithStatusJSON(code, ae.NewHTTPError(err))

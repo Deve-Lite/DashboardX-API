@@ -5,6 +5,7 @@ import (
 	"github.com/Deve-Lite/DashboardX-API/internal/application/mapper"
 	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/cache"
 	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/persistance"
+	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/smtp"
 	"github.com/Deve-Lite/DashboardX-API/pkg/validate"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -42,10 +43,14 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client) *Application
 	deviceRepo := persistance.NewDeviceRepository(d)
 	controlRepo := persistance.NewDeviceControlRepository(d)
 	tokenRepo := cache.NewTokenRepository(ch)
+	preUserRepo := cache.NewPreUserRepository(ch)
 
+	mailAdp := smtp.NewMailAdapter(c)
+
+	mailSrv := NewMailService(mailAdp)
 	cryptoSrv := NewCryptoService()
 	authSrv := NewRESTAuthService(c, tokenRepo)
-	userSrv := NewUserService(c, userRepo, authSrv)
+	userSrv := NewUserService(c, preUserRepo, userRepo, authSrv, mailSrv)
 	brokerSrv := NewBrokerService(c, brokerRepo, cryptoSrv)
 	deviceSrv := NewDeviceService(deviceRepo, brokerSrv)
 	controlSrv := NewDeviceControlService(controlRepo, deviceSrv)

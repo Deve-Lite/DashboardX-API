@@ -18,6 +18,8 @@ func NewRouter(
 	ug := r.Group("users")
 	ug.POST("/register", uh.Register)
 	ug.POST("/login", uh.Login)
+	ug.POST("/confirm", mr.ValidConfirm, uh.Confirm)
+	ug.POST("/confirm/resend", uh.ResendConfirm)
 	ug.POST("/refresh", mr.ValidRefresh, uh.Refresh)
 	ug.GET("/me", mr.LoggedIn, uh.Get)
 	ug.PATCH("/me", mr.LoggedIn, uh.Update)
