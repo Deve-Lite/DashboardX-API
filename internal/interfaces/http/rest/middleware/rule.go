@@ -18,6 +18,8 @@ type Rule interface {
 	LoggedIn(*gin.Context)
 	ValidRefresh(ctx *gin.Context)
 	ValidConfirm(ctx *gin.Context)
+	ValidReset(ctx *gin.Context)
+	ValidResetSubject(ctx *gin.Context)
 }
 
 type rule struct {
@@ -79,7 +81,47 @@ func (r *rule) ValidConfirm(ctx *gin.Context) {
 		return
 	}
 
-	if err := r.setPreUserContext(claims, ctx); err != nil {
+	if err := r.setSubjectContext(claims, ctx); err != nil {
+		return
+	}
+
+	ctx.Next()
+}
+
+func (r *rule) ValidReset(ctx *gin.Context) {
+	token := r.getToken(ctx)
+	if token == "" {
+		return
+	}
+
+	claims, err := r.a.VerifyResetToken(ctx, token)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(err))
+		return
+	}
+
+	if err := r.setSubjectContext(claims, ctx); err != nil {
+		return
+	}
+
+	ctx.Next()
+}
+
+func (r *rule) ValidResetSubject(ctx *gin.Context) {
+	subID, err := uuid.Parse(ctx.GetString("SubID"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(err))
+		return
+	}
+
+	hashSubID, err := ctx.Cookie("rps")
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(err))
+		return
+	}
+
+	if err := r.a.VerifyResetPasswordSubject(ctx, subID, hashSubID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(err))
 		return
 	}
 
@@ -126,21 +168,37 @@ func (r *rule) setUserContext(claims *dto.RESTClaims, ctx *gin.Context) error {
 		return err
 	}
 
-	ctx.Set("UserID", user.ID.String())
-	ctx.Set("IsAdmin", user.IsAdmin)
-
-	return nil
-}
-
-func (r *rule) setPreUserContext(claims *jwt.RegisteredClaims, ctx *gin.Context) error {
-	var userID uuid.UUID
-	userID, err := uuid.Parse(claims.Subject)
+	var JWTID uuid.UUID
+	JWTID, err = uuid.Parse(claims.ID)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
 		return err
 	}
 
-	ctx.Set("UserID", userID.String())
+	ctx.Set("UserID", user.ID.String())
+	ctx.Set("IsAdmin", user.IsAdmin)
+	ctx.Set("JWTID", JWTID.String())
+
+	return nil
+}
+
+func (r *rule) setSubjectContext(claims *jwt.RegisteredClaims, ctx *gin.Context) error {
+	var subID uuid.UUID
+	subID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
+		return err
+	}
+
+	var JWTID uuid.UUID
+	JWTID, err = uuid.Parse(claims.ID)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
+		return err
+	}
+
+	ctx.Set("SubID", subID.String())
+	ctx.Set("JWTID", JWTID.String())
 
 	return nil
 }

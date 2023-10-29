@@ -20,6 +20,8 @@ var (
 	ErrUserCreation          = errors.New("could not create a user")
 	ErrNoAwaitingConfirm     = errors.New("account does not await to be confirmed")
 	ErrConfirmationRequired  = errors.New("email has to be verified")
+	ErrUnexpected            = errors.New("something went wrong")
+	ErrUnauthorized          = errors.New("could not authorize a user")
 )
 
 type HTTPError struct {

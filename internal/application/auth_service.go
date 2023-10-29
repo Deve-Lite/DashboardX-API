@@ -7,6 +7,7 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
 	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
@@ -19,15 +20,20 @@ type RESTAuthService interface {
 	GenerateTokens(ctx context.Context, user *domain.User) (*dto.Tokens, error)
 	VerifyConfirmToken(ctx context.Context, token string) (*jwt.RegisteredClaims, error)
 	GenerateConfirmToken(ctx context.Context, preUserID uuid.UUID) (string, error)
+	VerifyResetToken(ctx context.Context, token string) (*jwt.RegisteredClaims, error)
+	GenerateResetToken(ctx context.Context, subID uuid.UUID) (string, error)
+	VerifyResetPasswordSubject(ctx context.Context, subID uuid.UUID, enSubID string) error
+	RevokeRefreshTokens(ctx context.Context, userID uuid.UUID) error
 }
 
 type restAuthService struct {
 	c  *config.Config
 	tr repository.TokenRepository
+	cs CryptoService
 }
 
-func NewRESTAuthService(c *config.Config, tr repository.TokenRepository) RESTAuthService {
-	return &restAuthService{c, tr}
+func NewRESTAuthService(c *config.Config, tr repository.TokenRepository, cs CryptoService) RESTAuthService {
+	return &restAuthService{c, tr, cs}
 }
 
 func (a *restAuthService) GenerateTokens(ctx context.Context, user *domain.User) (*dto.Tokens, error) {
@@ -38,12 +44,14 @@ func (a *restAuthService) GenerateTokens(ctx context.Context, user *domain.User)
 	arc.Subject = user.ID.String()
 	arc.ID = uuid.NewString()
 
+	rrcDuration := time.Duration(a.c.JWT.RefreshLifespanHours * float32(time.Hour))
 	rrc := dto.RESTClaims{
 		IsAdmin: user.IsAdmin,
 	}
-	rrc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(a.c.JWT.RefreshLifespanHours * float32(time.Hour))))
+	rrc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(rrcDuration))
 	rrc.Subject = user.ID.String()
-	rrc.ID = uuid.NewString()
+	rrcID := uuid.New()
+	rrc.ID = rrcID.String()
 
 	ac := jwt.NewWithClaims(jwt.SigningMethodHS256, arc)
 	rc := jwt.NewWithClaims(jwt.SigningMethodHS256, rrc)
@@ -60,9 +68,11 @@ func (a *restAuthService) GenerateTokens(ctx context.Context, user *domain.User)
 	}
 
 	if err := a.tr.Set(ctx, &domain.Token{
-		UserID:          user.ID,
-		Refresh:         rt,
-		ExpirationHours: a.c.JWT.RefreshLifespanHours,
+		Prefix:     enum.TokenRefresh,
+		ID:         rrcID,
+		SubID:      user.ID,
+		Value:      rt,
+		Expiration: rrcDuration,
 	}); err != nil {
 		return nil, err
 	}
@@ -93,7 +103,7 @@ func (a *restAuthService) VerifyToken(ctx context.Context, token string, tokenTy
 	claims := parsed.Claims.(*dto.RESTClaims)
 
 	if tokenType == "refresh" {
-		found, err := a.tr.Get(ctx, uuid.MustParse(claims.Subject))
+		found, err := a.tr.Get(ctx, enum.TokenRefresh, uuid.MustParse(claims.ID), uuid.MustParse(claims.Subject))
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +112,7 @@ func (a *restAuthService) VerifyToken(ctx context.Context, token string, tokenTy
 			return nil, ae.ErrInvalidRefreshToken
 		}
 
-		err = a.tr.Delete(ctx, uuid.MustParse(claims.Subject))
+		err = a.tr.Delete(ctx, enum.TokenRefresh, uuid.MustParse(claims.ID), uuid.MustParse(claims.Subject))
 		if err != nil {
 			return nil, err
 		}
@@ -112,21 +122,21 @@ func (a *restAuthService) VerifyToken(ctx context.Context, token string, tokenTy
 }
 
 func (a *restAuthService) GenerateConfirmToken(ctx context.Context, preUserID uuid.UUID) (string, error) {
-	crc := jwt.RegisteredClaims{}
-	crc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(a.c.JWT.ConfirmLifespanHours * float32(time.Hour))))
-	crc.Subject = preUserID.String()
-	crc.ID = uuid.NewString()
+	rc := jwt.RegisteredClaims{}
+	rc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Duration(a.c.JWT.ConfirmLifespanHours * float32(time.Hour))))
+	rc.Subject = preUserID.String()
+	rc.ID = uuid.NewString()
 
-	rc := jwt.NewWithClaims(jwt.SigningMethodHS256, crc)
+	c := jwt.NewWithClaims(jwt.SigningMethodHS256, rc)
 
 	var err error
-	var ct string
-	ct, err = rc.SignedString([]byte(a.c.JWT.ConfirmSecret))
+	var t string
+	t, err = c.SignedString([]byte(a.c.JWT.ConfirmSecret))
 	if err != nil {
 		return "", err
 	}
 
-	return ct, nil
+	return t, nil
 }
 
 func (a *restAuthService) VerifyConfirmToken(ctx context.Context, token string) (*jwt.RegisteredClaims, error) {
@@ -140,4 +150,71 @@ func (a *restAuthService) VerifyConfirmToken(ctx context.Context, token string) 
 	claims := parsed.Claims.(*jwt.RegisteredClaims)
 
 	return claims, nil
+}
+
+func (a *restAuthService) GenerateResetToken(ctx context.Context, subID uuid.UUID) (string, error) {
+	duration := time.Duration(a.c.JWT.ResetLifespanMinutes * float32(time.Minute))
+	rc := jwt.RegisteredClaims{}
+	rc.ExpiresAt = jwt.NewNumericDate(time.Now().Add(duration))
+	rc.Subject = subID.String()
+	rcID := uuid.New()
+	rc.ID = rcID.String()
+
+	c := jwt.NewWithClaims(jwt.SigningMethodHS256, rc)
+
+	var err error
+	var t string
+	t, err = c.SignedString([]byte(a.c.JWT.ResetSecret))
+	if err != nil {
+		return "", err
+	}
+
+	a.tr.Set(ctx, &domain.Token{
+		Prefix:     enum.TokenReset,
+		ID:         rcID,
+		SubID:      subID,
+		Value:      t,
+		Expiration: duration,
+	})
+
+	return t, nil
+}
+
+func (a *restAuthService) VerifyResetToken(ctx context.Context, token string) (*jwt.RegisteredClaims, error) {
+	parsed, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(a.c.JWT.ResetSecret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims := parsed.Claims.(*jwt.RegisteredClaims)
+
+	found, err := a.tr.Get(ctx, enum.TokenReset, uuid.MustParse(claims.ID), uuid.MustParse(claims.Subject))
+	if err != nil {
+		return nil, err
+	}
+
+	if found != token {
+		return nil, ae.ErrInvalidRefreshToken
+	}
+
+	err = a.tr.Delete(ctx, enum.TokenReset, uuid.MustParse(claims.ID), uuid.MustParse(claims.Subject))
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
+}
+
+func (a *restAuthService) VerifyResetPasswordSubject(ctx context.Context, subID uuid.UUID, hashSubID string) error {
+	if err := a.cs.CompareHash(hashSubID, subID.String()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *restAuthService) RevokeRefreshTokens(ctx context.Context, userID uuid.UUID) error {
+	return a.tr.DeleteAll(ctx, enum.TokenRefresh, userID)
 }

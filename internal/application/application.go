@@ -5,7 +5,8 @@ import (
 	"github.com/Deve-Lite/DashboardX-API/internal/application/mapper"
 	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/cache"
 	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/persistance"
-	"github.com/Deve-Lite/DashboardX-API/internal/infrastructure/smtp"
+	ismtp "github.com/Deve-Lite/DashboardX-API/internal/infrastructure/smtp"
+	"github.com/Deve-Lite/DashboardX-API/pkg/smtp"
 	"github.com/Deve-Lite/DashboardX-API/pkg/validate"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -26,7 +27,7 @@ type Application struct {
 	ControlMap mapper.DeviceControlMapper
 }
 
-func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client) *Application {
+func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client, s smtp.Client) *Application {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("emptymin", validate.EmptyMin)
 		v.RegisterValidation("emptyemail", validate.EmptyEmail)
@@ -44,13 +45,15 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client) *Application
 	controlRepo := persistance.NewDeviceControlRepository(d)
 	tokenRepo := cache.NewTokenRepository(ch)
 	preUserRepo := cache.NewPreUserRepository(ch)
+	userActionRepo := cache.NewUserActionRepository(ch)
 
-	mailAdp := smtp.NewMailAdapter(c)
+	mailAdp := ismtp.NewMailAdapter(c, s)
 
 	mailSrv := NewMailService(mailAdp)
-	cryptoSrv := NewCryptoService()
-	authSrv := NewRESTAuthService(c, tokenRepo)
-	userSrv := NewUserService(c, preUserRepo, userRepo, authSrv, mailSrv)
+	cryptoSrv := NewCryptoService(c)
+	authSrv := NewRESTAuthService(c, tokenRepo, cryptoSrv)
+	userSrv := NewUserService(c, preUserRepo, userRepo, userActionRepo,
+		authSrv, mailSrv, cryptoSrv)
 	brokerSrv := NewBrokerService(c, brokerRepo, cryptoSrv)
 	deviceSrv := NewDeviceService(deviceRepo, brokerSrv)
 	controlSrv := NewDeviceControlService(controlRepo, deviceSrv)

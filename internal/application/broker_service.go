@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
 	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
@@ -71,7 +72,7 @@ func (b *brokerService) GetCredentials(ctx context.Context, brokerID uuid.UUID, 
 	}
 
 	if broker.Username.Set && !broker.Username.Null {
-		username, err := b.cs.Decrypt(broker.Username.String, b.c.Crytpo.BrokersAESKey)
+		username, err := b.cs.Decrypt(broker.Username.String, enum.CryptoBrokerKey)
 		if err != nil {
 			return nil, err
 		}
@@ -80,7 +81,7 @@ func (b *brokerService) GetCredentials(ctx context.Context, brokerID uuid.UUID, 
 	}
 
 	if broker.Password.Set && !broker.Password.Null {
-		password, err := b.cs.Decrypt(broker.Password.String, b.c.Crytpo.BrokersAESKey)
+		password, err := b.cs.Decrypt(broker.Password.String, enum.CryptoBrokerKey)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +98,7 @@ func (b *brokerService) SetCredentials(ctx context.Context, broker *domain.Updat
 	}
 
 	if !broker.Username.Null {
-		username, err := b.cs.Encrypt(broker.Username.String, b.c.Crytpo.BrokersAESKey)
+		username, err := b.cs.Encrypt(broker.Username.String, enum.CryptoBrokerKey)
 		if err != nil {
 			return err
 		}
@@ -106,7 +107,7 @@ func (b *brokerService) SetCredentials(ctx context.Context, broker *domain.Updat
 	}
 
 	if !broker.Password.Null {
-		password, err := b.cs.Encrypt(broker.Password.String, b.c.Crytpo.BrokersAESKey)
+		password, err := b.cs.Encrypt(broker.Password.String, enum.CryptoBrokerKey)
 		if err != nil {
 			return err
 		}

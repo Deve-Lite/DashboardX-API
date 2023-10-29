@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"time"
+
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/handler"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/middleware"
 	"github.com/gin-gonic/gin"
@@ -9,21 +11,28 @@ import (
 func NewRouter(
 	g *gin.Engine,
 	mr middleware.Rule,
+	mi middleware.Info,
 	uh handler.UserHandler,
 	bh handler.BrokerHandler,
 	dh handler.DeviceHandler) {
-	r := g.Group("api/v1")
+	r := g.Group("/api/v1")
 
 	// User API
 	ug := r.Group("users")
 	ug.POST("/register", uh.Register)
 	ug.POST("/login", uh.Login)
-	ug.POST("/confirm", mr.ValidConfirm, uh.Confirm)
-	ug.POST("/confirm/resend", uh.ResendConfirm)
-	ug.POST("/refresh", mr.ValidRefresh, uh.Refresh)
+	ug.POST("/confirm-account", mr.ValidConfirm, uh.ConfirmAccount)
+	ug.POST("/confirm-account/resend", uh.ResendConfirmAccount)
+	ug.POST("/refresh", mi.Depricated(
+		time.Date(2023, 10, 26, 0, 0, 0, 0, time.UTC),
+		time.Date(2023, 11, 26, 23, 59, 59, 0, time.UTC),
+		"/api/v1/users/me/tokens"), mr.ValidRefresh, uh.Tokens)
+	ug.POST("/reset-password", uh.ResetPasswordToken)
+	ug.PATCH("/reset-password", mr.ValidReset, mr.ValidResetSubject, uh.ResetPasswordChange)
 	ug.GET("/me", mr.LoggedIn, uh.Get)
 	ug.PATCH("/me", mr.LoggedIn, uh.Update)
 	ug.DELETE("/me", mr.LoggedIn, uh.Delete)
+	ug.POST("/me/tokens", mr.ValidRefresh, uh.Tokens)
 	ug.PATCH("/me/password", mr.LoggedIn, uh.ChangePassword)
 
 	// Broker API

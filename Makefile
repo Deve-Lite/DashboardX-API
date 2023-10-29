@@ -18,9 +18,9 @@ setup:
 	@docker compose rm -vfs
 	@docker rmi -f dashboardx-api-app
 
-	@docker volume rm dashboardx-api_postgres-data
-	@docker volume rm dashboardx-api_redis-data
-	@docker volume rm dashboardx-api_smtp4dev-data
+	@docker volume rm -f dashboardx-api_postgres-data
+	@docker volume rm -f dashboardx-api_redis-data
+	@docker volume rm -f dashboardx-api_smtp4dev-data
 
 	@docker compose build --no-cache
 
@@ -38,7 +38,7 @@ setup-prune:
 
 
 # Runs integration tests in the Docker
-test:
+docker-test:
 	@docker compose run --rm app go test -v -timeout 30s \
     	./internal/interfaces/http/rest/handler \
     	./internal/application

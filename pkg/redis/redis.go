@@ -10,11 +10,11 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func NewDB(c *config.Config) *redis.Client {
+func NewDB(c *config.RedisConfig) *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", c.Redis.Host, c.Redis.Port),
-		Password: c.Redis.Password,
-		DB:       int(c.Redis.Database),
+		Addr:     fmt.Sprintf("%s:%d", c.Host, c.Port),
+		Password: c.Password,
+		DB:       int(c.Database),
 	})
 
 	ctx := context.Background()
@@ -35,11 +35,11 @@ func NewDB(c *config.Config) *redis.Client {
 	return client
 }
 
-func FlushDB(c *config.Config) error {
+func FlushDB(c *config.RedisConfig) error {
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", c.Redis.Host, c.Redis.Port),
-		Password: c.Redis.Password,
-		DB:       int(c.Redis.Database),
+		Addr:     fmt.Sprintf("%s:%d", c.Host, c.Port),
+		Password: c.Password,
+		DB:       int(c.Database),
 	})
 
 	ctx := context.Background()
