@@ -1522,9 +1522,6 @@
                         "type": "string"
                     }
                 },
-                "secondSpan": {
-                    "type": "integer"
-                },
                 "sendAsTicks": {
                     "type": "boolean"
                 },

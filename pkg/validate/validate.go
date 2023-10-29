@@ -183,7 +183,7 @@ var ControlAttributes validator.Func = func(fl validator.FieldLevel) bool {
 	case enum.ControlSlider:
 		return onlyRequiredAttributes(v, "PayloadTemplate", "MinValue", "MaxValue")
 	case enum.ControlState:
-		return onlyRequiredAttributes(v, "SecondSpan")
+		return onlyRequiredAttributes(v, "OnPayload", "OffPayload")
 	case enum.ControlSwitch:
 		return onlyRequiredAttributes(v, "OnPayload", "OffPayload")
 	case enum.ControlTextOut:

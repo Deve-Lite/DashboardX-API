@@ -1529,9 +1529,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "secondSpan": {
-                    "type": "integer"
-                },
                 "sendAsTicks": {
                     "type": "boolean"
                 },

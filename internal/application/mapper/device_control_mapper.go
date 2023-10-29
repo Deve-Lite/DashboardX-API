@@ -86,11 +86,6 @@ func (*deviceControlMapper) ModelToDTO(v *domain.DeviceControl) *dto.GetDeviceCo
 			r.Attributes.Payloads = &a
 		}
 
-		if k == "secondSpan" {
-			t := int(e.(float64))
-			r.Attributes.SecondSpan = &t
-		}
-
 		if k == "sendAsTicks" {
 			t := e.(bool)
 			r.Attributes.SendAsTicks = &t

@@ -32,8 +32,6 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      secondSpan:
-        type: integer
       sendAsTicks:
         type: boolean
       value:
