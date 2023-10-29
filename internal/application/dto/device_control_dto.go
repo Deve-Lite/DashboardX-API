@@ -15,7 +15,6 @@ type ControlAttributes struct {
 	Payloads        *map[string]string `json:"payloads,omitempty"`
 	OnPayload       *string            `json:"onPayload,omitempty"`
 	OffPayload      *string            `json:"offPayload,omitempty"`
-	SecondSpan      *int               `json:"secondSpan,omitempty"`
 	SendAsTicks     *bool              `json:"sendAsTicks,omitempty"`
 }
 
