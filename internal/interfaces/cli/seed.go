@@ -110,18 +110,18 @@ func Seed(c *config.Config) {
 
 	did1, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid1,
-		Name:                "Lamp",
+		Name:                "Prawdziwa lampka",
 		Placing:             t.NewString("Office", false, true),
 		IconName:            "Bussiness",
 		IconBackgroundColor: "#86b049",
-		BasePath:            t.NewString("office-lamp", false, true),
+		BasePath:            t.NewString("", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
 	})
 	app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid1,
 		Name:                "Lamp",
 		Placing:             t.NewString("Bedroom", false, true),
-		IconName:            "default2.png",
+		IconName:            "Bussiness",
 		IconBackgroundColor: "#dff5ce",
 		BasePath:            t.NewString("bedroom-lamp", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
@@ -136,15 +136,17 @@ func Seed(c *config.Config) {
 		BrokerID:            uuid.NullUUID{UUID: bid1, Valid: true},
 	})
 
-	attributes := make(domain.ControlAttributes)
+	sca := make(domain.ControlAttributes)
 
 	// Adding some attributes
-	attributes["payload"] = "red"
+	sca["onPayload"] = "{\"state\": \"1\"}"
+	sca["offPayload"] = "{\"state\": \"0\"}"
 
+	//State
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
 		DeviceID:               did1,
-		Type:                   enum.ControlButton,
-		Topic:                  "button/topic",
+		Type:                   enum.ControlState,
+		Topic:                  "state",
 		Name:                   "Lamp",
 		QoS:                    enum.QoSZero,
 		IsConfirmationRequired: false,
@@ -153,14 +155,43 @@ func Seed(c *config.Config) {
 		IconBackgroundColor:    "#aa00ff",
 		CanNotifyOnPublish:     false,
 		CanDisplayName:         true,
-		Attributes:             attributes,
+		Attributes:             sca,
 	})
+
+	//radio - mode
+
+	lcca := make(domain.ControlAttributes)
+
+	lcca["payloads"] = "{\"White\": \"{\"mode\": 1,\"data\":{\"brightness\": 1,\"extend\":{\"color\":[256, 256, 256]}}}\",\"RGB\": \"{\"mode\": 5,\"data\":{\"brightness\": 0.5,\"extend\":{\"wait\": 5}}}\",\"Fade\": \"{\"mode\": 7,\"data\":{\"brightness\": 0.5,\"extend\":{\"wait\":[[255, 0, 0],[255, 255, 0],[0, 255, 0],[0, 255, 255],[0, 0, 255],[255, 0, 255]]}}}\",}"
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlRadio,
+		Topic:                  "new_mode",
+		Name:                   "Lamp Mode",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: false,
+		IsAvailable:            true,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             lcca,
+	})
+
+	//slider - brightness
+
+	bca := make(domain.ControlAttributes)
+
+	bca["minValue"] = "0"
+	bca["maxValue"] = "1"
+	bca["payloadTemplate"] = "{\"brightness\": $value}"
 
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
 		DeviceID:               did1,
 		Type:                   enum.ControlButton,
-		Topic:                  "button/topic",
-		Name:                   "Lamp",
+		Topic:                  "update_mode",
+		Name:                   "Brightness",
 		QoS:                    enum.QoSZero,
 		IsConfirmationRequired: true,
 		IsAvailable:            false,
@@ -168,7 +199,7 @@ func Seed(c *config.Config) {
 		IconBackgroundColor:    "#aa00ff",
 		CanNotifyOnPublish:     false,
 		CanDisplayName:         true,
-		Attributes:             attributes,
+		Attributes:             bca,
 	})
 
 	did2, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
@@ -199,6 +230,10 @@ func Seed(c *config.Config) {
 		BrokerID:            uuid.NullUUID{UUID: bid3, Valid: true},
 	})
 
+	bca2 := make(domain.ControlAttributes)
+
+	bca2["payload"] = "No siema"
+
 	app.ControlSrv.Create(ctx, uid2, &domain.CreateDeviceControl{
 		DeviceID:               did2,
 		Type:                   enum.ControlButton,
@@ -211,6 +246,6 @@ func Seed(c *config.Config) {
 		IconBackgroundColor:    "#aa00ff",
 		CanNotifyOnPublish:     false,
 		CanDisplayName:         true,
-		Attributes:             attributes,
+		Attributes:             bca2,
 	})
 }
