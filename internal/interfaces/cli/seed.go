@@ -183,8 +183,8 @@ func Seed(c *config.Config) {
 
 	bca := make(domain.ControlAttributes)
 
-	bca["min"] = "0"
-	bca["max"] = "1"
+	bca["minValue"] = "0"
+	bca["maxValue"] = "1"
 	bca["payloadTemplate"] = "{\"brightness\": $value}"
 
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
