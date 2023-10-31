@@ -114,14 +114,14 @@ func Seed(c *config.Config) {
 		Placing:             t.NewString("Office", false, true),
 		IconName:            "Bussiness",
 		IconBackgroundColor: "#86b049",
-		BasePath:            t.NewString("ToRemove", false, true),
+		BasePath:            t.NewString("", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
 	})
 	app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid1,
 		Name:                "Lamp",
 		Placing:             t.NewString("Bedroom", false, true),
-		IconName:            "default2.png",
+		IconName:            "Bussiness",
 		IconBackgroundColor: "#dff5ce",
 		BasePath:            t.NewString("bedroom-lamp", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
@@ -139,8 +139,8 @@ func Seed(c *config.Config) {
 	sca := make(domain.ControlAttributes)
 
 	// Adding some attributes
-	sca["payloadOn"] = "{\"state\": \"1\"}"
-	sca["payloadOff"] = "{\"state\": \"0\"}"
+	sca["onPayload"] = "{\"state\": \"1\"}"
+	sca["offPayload"] = "{\"state\": \"0\"}"
 
 	//State
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
