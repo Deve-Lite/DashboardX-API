@@ -108,15 +108,6 @@ func Seed(c *config.Config) {
 		Password: t.NewString("Admin123", false, true),
 	})
 
-	did1, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
-		UserID:              uid1,
-		Name:                "Prawdziwa lampka",
-		Placing:             t.NewString("Office", false, true),
-		IconName:            "Bussiness",
-		IconBackgroundColor: "#86b049",
-		BasePath:            t.NewString("", false, true),
-		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
-	})
 	app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid1,
 		Name:                "Lamp",
@@ -135,13 +126,22 @@ func Seed(c *config.Config) {
 		BasePath:            t.NewString("car", false, true),
 		BrokerID:            uuid.NullUUID{UUID: bid1, Valid: true},
 	})
+	did1, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
+		UserID:              uid1,
+		Name:                "Prawdziwa lampka",
+		Placing:             t.NewString("Office", false, true),
+		IconName:            "Bussiness",
+		IconBackgroundColor: "#86b049",
+		BasePath:            t.NewString("ToRemove", false, true),
+		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
+	})
 
+	//State
 	sca := make(domain.ControlAttributes)
 
 	sca["onPayload"] = `{"state": 1}`
 	sca["offPayload"] = `{"state": 0}`
 
-	//State
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
 		DeviceID:               did1,
 		Type:                   enum.ControlState,
