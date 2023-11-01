@@ -136,71 +136,6 @@ func Seed(c *config.Config) {
 		BrokerID:            uuid.NullUUID{UUID: bid2, Valid: true},
 	})
 
-	//State
-	sca := make(domain.ControlAttributes)
-
-	sca["onPayload"] = `{"state": 1}`
-	sca["offPayload"] = `{"state": 0}`
-
-	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
-		DeviceID:               did1,
-		Type:                   enum.ControlState,
-		Topic:                  "state",
-		Name:                   "Lamp",
-		QoS:                    enum.QoSZero,
-		IsConfirmationRequired: false,
-		IsAvailable:            true,
-		IconName:               "Home",
-		IconBackgroundColor:    "#aa00ff",
-		CanNotifyOnPublish:     false,
-		CanDisplayName:         true,
-		Attributes:             sca,
-	})
-
-	//radio - mode
-
-	lcca := make(domain.ControlAttributes)
-
-	lcca["payloads"] = `{"White": {"mode": 1,"data":{"brightness": 1,"extend":{"color":[256, 256, 256]}}},"RGB": {"mode": 5,"data":{"brightness": 0.5,"extend":{"wait": 5}}},"Fade": {"mode": 7,"data":{"brightness": 0.5,"extend":{"wait":[[255, 0, 0],[255, 255, 0],[0, 255, 0],[0, 255, 255],[0, 0, 255],[255, 0, 255]]}}}}`
-
-	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
-		DeviceID:               did1,
-		Type:                   enum.ControlRadio,
-		Topic:                  "new_mode",
-		Name:                   "Lamp Mode",
-		QoS:                    enum.QoSZero,
-		IsConfirmationRequired: false,
-		IsAvailable:            true,
-		IconName:               "Home",
-		IconBackgroundColor:    "#aa00ff",
-		CanNotifyOnPublish:     false,
-		CanDisplayName:         true,
-		Attributes:             lcca,
-	})
-
-	//slider - brightness
-
-	bca := make(domain.ControlAttributes)
-
-	bca["minValue"] = "0"
-	bca["maxValue"] = "1"
-	bca["payloadTemplate"] = `{"brightness": $value}`
-
-	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
-		DeviceID:               did1,
-		Type:                   enum.ControlButton,
-		Topic:                  "update_mode",
-		Name:                   "Brightness",
-		QoS:                    enum.QoSZero,
-		IsConfirmationRequired: true,
-		IsAvailable:            false,
-		IconName:               "Home",
-		IconBackgroundColor:    "#aa00ff",
-		CanNotifyOnPublish:     false,
-		CanDisplayName:         true,
-		Attributes:             bca,
-	})
-
 	did2, _ := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
 		UserID:              uid2,
 		Name:                "Lamp",
@@ -246,5 +181,74 @@ func Seed(c *config.Config) {
 		CanNotifyOnPublish:     false,
 		CanDisplayName:         true,
 		Attributes:             bca2,
+	})
+
+	//State
+	sca := make(domain.ControlAttributes)
+
+	sca["onPayload"] = map[string]interface{}{"state": 1}
+	sca["offPayload"] = map[string]interface{}{"state": 0}
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlState,
+		Topic:                  "state",
+		Name:                   "Lamp",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: false,
+		IsAvailable:            true,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             sca,
+	})
+
+	//radio - mode
+
+	lcca := make(domain.ControlAttributes)
+
+	lcca["payloads"] = map[string]map[string]interface{}{
+		"White": {"mode": 1},
+		"RGB":   {"mode": 5},
+		"Fade":  {"mode": 7},
+	}
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlRadio,
+		Topic:                  "new_mode",
+		Name:                   "Lamp Mode",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: false,
+		IsAvailable:            true,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             lcca,
+	})
+
+	//slider - brightness
+
+	bca := make(domain.ControlAttributes)
+
+	bca["minValue"] = 0
+	bca["maxValue"] = 1
+	bca["payloadTemplate"] = map[string]interface{}{"brightness": "$value"}
+
+	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
+		DeviceID:               did1,
+		Type:                   enum.ControlButton,
+		Topic:                  "update_mode",
+		Name:                   "Brightness",
+		QoS:                    enum.QoSZero,
+		IsConfirmationRequired: true,
+		IsAvailable:            false,
+		IconName:               "Home",
+		IconBackgroundColor:    "#aa00ff",
+		CanNotifyOnPublish:     false,
+		CanDisplayName:         true,
+		Attributes:             bca,
 	})
 }
