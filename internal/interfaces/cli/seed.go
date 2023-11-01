@@ -161,7 +161,7 @@ func Seed(c *config.Config) {
 
 	lcca := make(domain.ControlAttributes)
 
-	lcca["payloads"] = `{"White": "{"mode": 1,"data":{"brightness": 1,"extend":{"color":[256, 256, 256]}}}","RGB": "{"mode": 5,"data":{"brightness": 0.5,"extend":{"wait": 5}}}","Fade": "{"mode": 7,"data":{"brightness": 0.5,"extend":{"wait":[[255, 0, 0],[255, 255, 0],[0, 255, 0],[0, 255, 255],[0, 0, 255],[255, 0, 255]]}}}"}`
+	lcca["payloads"] = `{"White": {"mode": 1,"data":{"brightness": 1,"extend":{"color":[256, 256, 256]}}},"RGB": {"mode": 5,"data":{"brightness": 0.5,"extend":{"wait": 5}}},"Fade": {"mode": 7,"data":{"brightness": 0.5,"extend":{"wait":[[255, 0, 0],[255, 255, 0],[0, 255, 0],[0, 255, 255],[0, 0, 255],[255, 0, 255]]}}}}`
 
 	app.ControlSrv.Create(ctx, uid1, &domain.CreateDeviceControl{
 		DeviceID:               did1,
