@@ -22,3 +22,10 @@ go.work
 
 .env
 test.env
+
+*.ext
+*.pem
+*.crt
+*.key
+*.csr
+*.srl

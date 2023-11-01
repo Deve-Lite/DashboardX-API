@@ -1007,7 +1007,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/confirm": {
+        "/users/confirm-account": {
             "post": {
                 "security": [
                     {
@@ -1056,7 +1056,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/confirm/resend": {
+        "/users/confirm-account/resend": {
             "post": {
                 "description": "Sends a token to provided mailbox, if the account awaits to be confirmed",
                 "consumes": [
@@ -1071,18 +1071,18 @@ const docTemplate = `{
                 "summary": "Send a new token to confirm an account",
                 "parameters": [
                     {
-                        "description": "ResendConfirm input",
+                        "description": "Resend confirm input",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ResendConfirmUserRequest"
+                            "$ref": "#/definitions/dto.UserEmailRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "202": {
+                        "description": "Accepted"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1386,7 +1386,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/refresh": {
+        "/users/me/tokens": {
             "post": {
                 "security": [
                     {
@@ -1432,8 +1432,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Requires a valid refresh token sent in the Authorization header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Generate a new pair of user tokens",
+                "deprecated": true,
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Tokens"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/users/register": {
             "post": {
+                "description": "A link to confirm account will be sent to the provided email",
                 "consumes": [
                     "application/json"
                 ],
@@ -1456,8 +1504,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "202": {
+                        "description": "Accepted"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1467,6 +1515,101 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/reset-password": {
+            "post": {
+                "description": "User receives a token at a given email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Call an action to reset user's password",
+                "parameters": [
+                    {
+                        "description": "Reset passoword data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Requires a token sent in the Authorization header to verify password's change action",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Set a new password for a user",
+                "parameters": [
+                    {
+                        "description": "Reset passoword data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResetUserPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errors.HTTPError"
                         }
@@ -1898,14 +2041,15 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ResendConfirmUserRequest": {
+        "dto.ResetUserPasswordRequest": {
             "type": "object",
             "required": [
-                "email"
+                "password"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
+                "password": {
+                    "type": "string",
+                    "minLength": 6
                 }
             }
         },
@@ -2032,6 +2176,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "theme": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserEmailRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
                     "type": "string"
                 }
             }

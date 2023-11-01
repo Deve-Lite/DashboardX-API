@@ -6,21 +6,46 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
+
+	"github.com/Deve-Lite/DashboardX-API/config"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CryptoService interface {
-	Encrypt(text string, key string) (string, error)
-	Decrypt(text string, key string) (string, error)
+	GenerateHash(text string) (string, error)
+	CompareHash(hash, text string) error
+	Encrypt(text string, key enum.CryptoKey) (string, error)
+	Decrypt(text string, key enum.CryptoKey) (string, error)
 }
 
-type cryptoService struct{}
-
-func NewCryptoService() CryptoService {
-	return &cryptoService{}
+type cryptoService struct {
+	c    *config.Config
+	keys map[enum.CryptoKey]string
 }
 
-func (*cryptoService) Encrypt(text string, key string) (string, error) {
-	keyBytes, err := hex.DecodeString(key)
+func NewCryptoService(c *config.Config) CryptoService {
+	keys := make(map[enum.CryptoKey]string)
+
+	keys[enum.CryptoBrokerKey] = c.Crytpo.BrokersAESKey
+
+	return &cryptoService{c, keys}
+}
+
+func (s *cryptoService) GenerateHash(text string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(text), int(s.c.Crytpo.HashCost))
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+func (s *cryptoService) CompareHash(hash, text string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(text))
+}
+
+func (s *cryptoService) Encrypt(text string, key enum.CryptoKey) (string, error) {
+	keyBytes, err := hex.DecodeString(s.keys[key])
 	if err != nil {
 		return "", err
 	}
@@ -47,8 +72,8 @@ func (*cryptoService) Encrypt(text string, key string) (string, error) {
 	return hex.EncodeToString(cipText), nil
 }
 
-func (*cryptoService) Decrypt(text string, key string) (string, error) {
-	keyBytes, err := hex.DecodeString(key)
+func (s *cryptoService) Decrypt(text string, key enum.CryptoKey) (string, error) {
+	keyBytes, err := hex.DecodeString(s.keys[key])
 	if err != nil {
 		return "", err
 	}

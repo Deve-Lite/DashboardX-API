@@ -284,12 +284,13 @@ definitions:
     - email
     - password
     type: object
-  dto.ResendConfirmUserRequest:
+  dto.ResetUserPasswordRequest:
     properties:
-      email:
+      password:
+        minLength: 6
         type: string
     required:
-    - email
+    - password
     type: object
   dto.SetBrokerCredentialsRequest:
     properties:
@@ -375,6 +376,13 @@ definitions:
         type: string
       theme:
         type: string
+    type: object
+  dto.UserEmailRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
     type: object
   enum.ControlType:
     enum:
@@ -1049,7 +1057,7 @@ paths:
       summary: Update a device control
       tags:
       - Devices
-  /users/confirm:
+  /users/confirm-account:
     post:
       consumes:
       - application/json
@@ -1080,24 +1088,24 @@ paths:
       summary: Confirm a newly registered account
       tags:
       - Users
-  /users/confirm/resend:
+  /users/confirm-account/resend:
     post:
       consumes:
       - application/json
       description: Sends a token to provided mailbox, if the account awaits to be
         confirmed
       parameters:
-      - description: ResendConfirm input
+      - description: Resend confirm input
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/dto.ResendConfirmUserRequest'
+          $ref: '#/definitions/dto.UserEmailRequest'
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "202":
+          description: Accepted
         "400":
           description: Bad Request
           schema:
@@ -1291,10 +1299,40 @@ paths:
       summary: Change a password of logged in user
       tags:
       - Users
+  /users/me/tokens:
+    post:
+      consumes:
+      - application/json
+      description: Requires a valid refresh token sent in the Authorization header
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Tokens'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Generate a new pair of user tokens
+      tags:
+      - Users
   /users/refresh:
     post:
       consumes:
       - application/json
+      deprecated: true
       description: Requires a valid refresh token sent in the Authorization header
       produces:
       - application/json
@@ -1324,6 +1362,7 @@ paths:
     post:
       consumes:
       - application/json
+      description: A link to confirm account will be sent to the provided email
       parameters:
       - description: Register input
         in: body
@@ -1334,8 +1373,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "202":
+          description: Accepted
         "400":
           description: Bad Request
           schema:
@@ -1349,6 +1388,68 @@ paths:
           schema:
             $ref: '#/definitions/errors.HTTPError'
       summary: Register a new user
+      tags:
+      - Users
+  /users/reset-password:
+    patch:
+      consumes:
+      - application/json
+      description: Requires a token sent in the Authorization header to verify password's
+        change action
+      parameters:
+      - description: Reset passoword data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetUserPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Set a new password for a user
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: User receives a token at a given email
+      parameters:
+      - description: Reset passoword data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Call an action to reset user's password
       tags:
       - Users
 securityDefinitions:

@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -17,12 +19,34 @@ type Config struct {
 	SMTP        *SMTPConfig
 	Frontend    *FrontendConfig
 	MailAddress *MailAddressConfig
+	CORS        *CORSConfig
 }
 
 type ServerConfig struct {
-	Host string `mapstructure:"HOST"`
-	Port uint16 `mapstructure:"PORT"`
-	Env  string `mapstructure:"ENV"`
+	Host    string `mapstructure:"HOST"`
+	Port    uint16 `mapstructure:"PORT"`
+	Domain  string `mapstructure:"DOMAIN"`
+	Env     string `mapstructure:"ENV"`
+	TLSCert string `mapstructure:"TLS_CERT"`
+	TLSKey  string `mapstructure:"TLS_KEY"`
+}
+
+func (c *ServerConfig) URL() string {
+	url := c.Host
+	if c.Port != 0 && c.Port != 80 && c.Port != 443 {
+		url += fmt.Sprintf(":%d", c.Port)
+	}
+	return url
+}
+
+func (c *ServerConfig) IsTLS() bool {
+	if _, err := os.Stat(c.TLSCert); err != nil {
+		return false
+	}
+	if _, err := os.Stat(c.TLSKey); err != nil {
+		return false
+	}
+	return true
 }
 
 type PostgresConfig struct {
@@ -46,7 +70,7 @@ type JWTConfig struct {
 	ConfirmSecret        string  `mapstructure:"JWT_CONFIRM_SECRET"`
 	ConfirmLifespanHours float32 `mapstructure:"JWT_CONFIRM_LIFESPAN_HOURS"`
 	ResetSecret          string  `mapstructure:"JWT_RESET_SECRET"`
-	ResetLifespanHours   float32 `mapstructure:"JWT_RESET_LIFESPAN_HOURS"`
+	ResetLifespanMinutes float32 `mapstructure:"JWT_RESET_LIFESPAN_MINUTES"`
 }
 
 type RedisConfig struct {
@@ -57,10 +81,11 @@ type RedisConfig struct {
 }
 
 type SMTPConfig struct {
-	User     string `mapstructure:"SMTP_USER"`
-	Password string `mapstructure:"SMTP_PASSWORD"`
-	Port     uint8  `mapstructure:"SMTP_PORT"`
-	Host     string `mapstructure:"SMTP_HOST"`
+	User               string `mapstructure:"SMTP_USER"`
+	Password           string `mapstructure:"SMTP_PASSWORD"`
+	Port               uint16 `mapstructure:"SMTP_PORT"`
+	Host               string `mapstructure:"SMTP_HOST"`
+	InsecureSkipVerify bool   `mapstructure:"SMTP_INSECURE_SKIP_VERIFY"`
 }
 
 type FrontendConfig struct {
@@ -70,6 +95,13 @@ type FrontendConfig struct {
 
 type MailAddressConfig struct {
 	Default string `mapstructure:"MAIL_ADDRESS_DEFAULT"`
+}
+
+type CORSConfig struct {
+	Credentials string `mapstructure:"CORS_CREDENTIALS"`
+	Methods     string `mapstructure:"CORS_METHODS"`
+	Origin      string `mapstructure:"CORS_ORIGIN"`
+	Headers     string `mapstructure:"CORS_HEADERS"`
 }
 
 func loadConfig[T interface{}](v *viper.Viper, c T) *T {
@@ -101,6 +133,7 @@ func NewConfig(filename string) *Config {
 		SMTP:        loadConfig(v, SMTPConfig{}),
 		Frontend:    loadConfig(v, FrontendConfig{}),
 		MailAddress: loadConfig(v, MailAddressConfig{}),
+		CORS:        loadConfig(v, CORSConfig{}),
 	}
 
 	return &config

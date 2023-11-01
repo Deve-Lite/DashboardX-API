@@ -16,6 +16,7 @@ import (
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/middleware"
 	"github.com/Deve-Lite/DashboardX-API/pkg/postgres"
 	"github.com/Deve-Lite/DashboardX-API/pkg/redis"
+	"github.com/Deve-Lite/DashboardX-API/pkg/smtp"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -34,6 +35,7 @@ type test struct {
 	c  *config.Config
 	d  *sqlx.DB
 	ch *gredis.Client
+	s  smtp.Client
 }
 
 type Test interface {
@@ -49,18 +51,21 @@ func NewTest() Test {
 
 	c := config.NewConfig("test.env")
 
-	if postgres.Exists(c) {
-		postgres.Drop(c)
+	if postgres.Exists(c.Postgres) {
+		postgres.Drop(c.Postgres)
 	}
 
-	redis.FlushDB(c)
+	redis.FlushDB(c.Redis)
 
-	postgres.Create(c)
-	postgres.RunUp(c)
+	postgres.Create(c.Postgres)
+	postgres.RunUp(c.Postgres)
 
-	d := postgres.NewDB(c)
-	ch := redis.NewDB(c)
-	return &test{c, d, ch}
+	d := postgres.NewDB(c.Postgres)
+	ch := redis.NewDB(c.Redis)
+
+	s := smtp.NewClient(c.SMTP)
+
+	return &test{c, d, ch, s}
 }
 
 func (t *test) MakeRequest(g *gin.Engine, method string, url string, payload io.Reader, token *string) *httptest.ResponseRecorder {
@@ -83,15 +88,16 @@ func (t *test) SetupApp() (*gin.Engine, *application.Application) {
 
 	gin := gin.Default()
 
-	app := application.NewApplication(t.c, t.d, t.ch)
+	app := application.NewApplication(t.c, t.d, t.ch, t.s)
 
 	mRule := middleware.NewRule(app.AuthSrv, app.UserSrv)
+	mInfo := middleware.NewInfo(t.c)
 
-	userHnd := handler.NewUserHandler(app.UserSrv, app.UserMap)
+	userHnd := handler.NewUserHandler(t.c, app.UserSrv, app.UserMap)
 	brokerHnd := handler.NewBrokerHandler(app.BrokerSrv, app.BrokerMap)
 	deviceHnd := handler.NewDeviceHandler(app.DeviceSrv, app.ControlSrv, app.DeviceMap, app.ControlMap)
 
-	rest.NewRouter(gin, mRule, userHnd, brokerHnd, deviceHnd)
+	rest.NewRouter(gin, mRule, mInfo, userHnd, brokerHnd, deviceHnd)
 
 	return gin, app
 }
@@ -100,8 +106,8 @@ func (t *test) Teardown() {
 	log.Print("Teardown test environment")
 	t.d.Close()
 
-	postgres.RunDown(t.c)
-	postgres.Drop(t.c)
+	postgres.RunDown(t.c.Postgres)
+	postgres.Drop(t.c.Postgres)
 }
 
 func (t *test) CreateUser(app *application.Application, name string, password string, email string) *User {

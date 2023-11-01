@@ -33,7 +33,7 @@ func TestUserRegister(t *testing.T) {
 	defer tt.Teardown()
 	g, _ := tt.SetupApp()
 
-	t.Run("should return 201 when a user has been registered", func(t *testing.T) {
+	t.Run("should return 202 when a user has been registered", func(t *testing.T) {
 		p := strings.NewReader(`
 			{
 				"name": "new-user",
@@ -46,7 +46,7 @@ func TestUserRegister(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/api/v1/users/register", p)
 		g.ServeHTTP(w, req)
 
-		assert.Equal(t, 201, w.Code)
+		assert.Equal(t, 202, w.Code)
 	})
 
 	t.Run("should return 400 when password is invalid", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestUserRegister(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/api/v1/users/register", p1)
 		g.ServeHTTP(w, req)
 
-		assert.Equal(t, 201, w.Code)
+		assert.Equal(t, 202, w.Code)
 
 		p2 := strings.NewReader(`
 			{
@@ -298,7 +298,7 @@ func TestUserLogin(t *testing.T) {
 	})
 }
 
-func TestUserRefresh(t *testing.T) {
+func TestUserTokensMe(t *testing.T) {
 	tt := test.NewTest()
 	defer tt.Teardown()
 	g, a := tt.SetupApp()
@@ -307,7 +307,7 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user1", "test1234", "user1@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
@@ -318,7 +318,7 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user2", "test1234", "user2@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
@@ -338,7 +338,7 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user3", "test1234", "user3@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
@@ -397,7 +397,7 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user8", "test1234", "user8@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
@@ -410,7 +410,7 @@ func TestUserRefresh(t *testing.T) {
 		}
 
 		w = httptest.NewRecorder()
-		req, _ = http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ = http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", data.RefreshToken))
 		g.ServeHTTP(w, req)
 
@@ -421,7 +421,7 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user10", "test1234", "user10@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
@@ -445,7 +445,7 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user4", "test1234", "user4@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.AccessToken)
 		g.ServeHTTP(w, req)
 
@@ -456,14 +456,14 @@ func TestUserRefresh(t *testing.T) {
 		u := tt.CreateUser(a, "user6", "test1234", "user6@test.com")
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
 		assert.Equal(t, w.Code, 200)
 
 		w = httptest.NewRecorder()
-		req, _ = http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ = http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 
@@ -472,14 +472,14 @@ func TestUserRefresh(t *testing.T) {
 
 	t.Run("should return 401 when token is invalid", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", "invalid")
 		g.ServeHTTP(w, req)
 
 		assert.Equal(t, 401, w.Code)
 
 		w = httptest.NewRecorder()
-		req, _ = http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ = http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", "Bearer invalid")
 		g.ServeHTTP(w, req)
 
@@ -488,7 +488,7 @@ func TestUserRefresh(t *testing.T) {
 
 	t.Run("should return 401 when token is missing", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		g.ServeHTTP(w, req)
 
 		assert.Equal(t, 401, w.Code)
@@ -499,7 +499,7 @@ func TestUserRefresh(t *testing.T) {
 		tt.DeleteUser(a, u.ID)
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/users/refresh", nil)
+		req, _ := http.NewRequest("POST", "/api/v1/users/me/tokens", nil)
 		req.Header.Set("Authorization", u.RefreshToken)
 		g.ServeHTTP(w, req)
 

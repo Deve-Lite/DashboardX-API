@@ -10,17 +10,20 @@ import (
 	t "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 	"github.com/Deve-Lite/DashboardX-API/pkg/postgres"
 	"github.com/Deve-Lite/DashboardX-API/pkg/redis"
+	"github.com/Deve-Lite/DashboardX-API/pkg/smtp"
 	"github.com/google/uuid"
 )
 
 func Seed(c *config.Config) {
-	db := postgres.NewDB(c)
+	db := postgres.NewDB(c.Postgres)
 	defer db.Close()
 
-	ch := redis.NewDB(c)
+	ch := redis.NewDB(c.Redis)
 	defer ch.Close()
 
-	app := application.NewApplication(c, db, ch)
+	s := smtp.NewClient(c.SMTP)
+
+	app := application.NewApplication(c, db, ch, s)
 
 	ctx := context.Background()
 

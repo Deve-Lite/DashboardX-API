@@ -15,12 +15,12 @@ func main() {
 	switch arg := os.Args[1]; arg {
 	case "migrate":
 	case "up":
-		postgres.RunUp(c)
+		postgres.RunUp(c.Postgres)
 	case "rollback":
 	case "down":
-		postgres.RunDown(c)
+		postgres.RunDown(c.Postgres)
 	case "create":
-		postgres.Create(c)
+		postgres.Create(c.Postgres)
 	case "seed":
 		cli.Seed(c)
 	default:

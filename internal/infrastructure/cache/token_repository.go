@@ -3,8 +3,8 @@ package cache
 import (
 	"context"
 	"fmt"
-	"time"
 
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
 	"github.com/google/uuid"
@@ -19,12 +19,16 @@ func NewTokenRepository(ch *redis.Client) repository.TokenRepository {
 	return &tokenRepository{ch}
 }
 
-func (*tokenRepository) key(userID uuid.UUID) string {
-	return fmt.Sprintf("refresh:%s", userID.String())
+func (*tokenRepository) key(prefix enum.TokenType, ID, SubID uuid.UUID) string {
+	return fmt.Sprintf("%s:%s:%s", prefix, ID.String(), SubID.String())
 }
 
-func (r *tokenRepository) Get(ctx context.Context, userID uuid.UUID) (string, error) {
-	v, err := r.ch.Get(ctx, r.key(userID)).Result()
+func (*tokenRepository) keyAll(prefix enum.TokenType, SubID uuid.UUID) string {
+	return fmt.Sprintf("%s:*:%s", prefix, SubID.String())
+}
+
+func (r *tokenRepository) Get(ctx context.Context, prefix enum.TokenType, ID, SubID uuid.UUID) (string, error) {
+	v, err := r.ch.Get(ctx, r.key(prefix, ID, SubID)).Result()
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +37,7 @@ func (r *tokenRepository) Get(ctx context.Context, userID uuid.UUID) (string, er
 }
 
 func (r *tokenRepository) Set(ctx context.Context, token *domain.Token) error {
-	err := r.ch.Set(ctx, r.key(token.UserID), token.Refresh, time.Duration(token.ExpirationHours*float32(time.Hour))).Err()
+	err := r.ch.Set(ctx, r.key(token.Prefix, token.ID, token.SubID), token.Value, token.Expiration).Err()
 	if err != nil {
 		return err
 	}
@@ -41,10 +45,26 @@ func (r *tokenRepository) Set(ctx context.Context, token *domain.Token) error {
 	return nil
 }
 
-func (r *tokenRepository) Delete(ctx context.Context, userID uuid.UUID) error {
-	err := r.ch.Del(ctx, r.key(userID)).Err()
+func (r *tokenRepository) Delete(ctx context.Context, prefix enum.TokenType, ID, SubID uuid.UUID) error {
+	err := r.ch.Del(ctx, r.key(prefix, ID, SubID)).Err()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (r *tokenRepository) DeleteAll(ctx context.Context, prefix enum.TokenType, SubID uuid.UUID) error {
+	keys, err := r.ch.Keys(ctx, r.keyAll(prefix, SubID)).Result()
+	if err != nil {
+		return err
+	}
+
+	for _, k := range keys {
+		err := r.ch.Del(ctx, k).Err()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

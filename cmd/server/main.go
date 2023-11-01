@@ -1,16 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/Deve-Lite/DashboardX-API/config"
-	_ "github.com/Deve-Lite/DashboardX-API/docs"
+	"github.com/Deve-Lite/DashboardX-API/docs"
 	"github.com/Deve-Lite/DashboardX-API/internal/application"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/handler"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/middleware"
 	"github.com/Deve-Lite/DashboardX-API/pkg/postgres"
 	"github.com/Deve-Lite/DashboardX-API/pkg/redis"
+	"github.com/Deve-Lite/DashboardX-API/pkg/smtp"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -30,11 +31,13 @@ import (
 func main() {
 	cfg := config.NewConfig(".env")
 
-	db := postgres.NewDB(cfg)
+	db := postgres.NewDB(cfg.Postgres)
 	defer db.Close()
 
-	ch := redis.NewDB(cfg)
+	ch := redis.NewDB(cfg.Redis)
 	defer ch.Close()
+
+	s := smtp.NewClient(cfg.SMTP)
 
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -42,21 +45,48 @@ func main() {
 
 	gin := gin.Default()
 
-	app := application.NewApplication(cfg, db, ch)
+	app := application.NewApplication(cfg, db, ch, s)
 
 	mRule := middleware.NewRule(app.AuthSrv, app.UserSrv)
+	mInfo := middleware.NewInfo(cfg)
 
-	userHnd := handler.NewUserHandler(app.UserSrv, app.UserMap)
+	userHnd := handler.NewUserHandler(cfg, app.UserSrv, app.UserMap)
 	brokerHnd := handler.NewBrokerHandler(app.BrokerSrv, app.BrokerMap)
 	deviceHnd := handler.NewDeviceHandler(app.DeviceSrv, app.ControlSrv, app.DeviceMap, app.ControlMap)
 
-	gin.Use(middleware.CORS)
+	gin.Use(middleware.CORS(cfg.CORS))
 
-	rest.NewRouter(gin, mRule, userHnd, brokerHnd, deviceHnd)
+	rest.NewRouter(gin, mRule, mInfo, userHnd, brokerHnd, deviceHnd)
 
-	if cfg.Server.Env == "development" {
-		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	setupSwagger(gin, cfg.Server)
+
+	runServer(gin, cfg.Server)
+}
+
+func runServer(gin *gin.Engine, cfg *config.ServerConfig) {
+	var err error
+	if cfg.IsTLS() {
+		err = gin.RunTLS(cfg.URL(), cfg.TLSCert, cfg.TLSKey)
+	} else {
+		err = gin.Run(cfg.URL())
 	}
 
-	gin.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
+func setupSwagger(gin *gin.Engine, cfg *config.ServerConfig) {
+	if cfg.Env == "development" {
+		switch cfg.Host {
+		case "127.0.0.1":
+			fallthrough
+		case "0.0.0.0":
+			fallthrough
+		case "localhost":
+			docs.SwaggerInfo.Host = cfg.URL()
+		}
+
+		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 }

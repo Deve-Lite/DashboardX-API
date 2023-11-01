@@ -3,7 +3,9 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"time"
 
+	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/Deve-Lite/DashboardX-API/internal/application"
 	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
 	"github.com/Deve-Lite/DashboardX-API/internal/application/mapper"
@@ -16,37 +18,41 @@ import (
 
 type UserHandler interface {
 	Register(ctx *gin.Context)
-	Refresh(ctx *gin.Context)
-	Confirm(ctx *gin.Context)
-	ResendConfirm(ctx *gin.Context)
+	Tokens(ctx *gin.Context)
+	ConfirmAccount(ctx *gin.Context)
+	ResendConfirmAccount(ctx *gin.Context)
 	Login(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	ChangePassword(ctx *gin.Context)
+	ResetPasswordToken(ctx *gin.Context)
+	ResetPasswordChange(ctx *gin.Context)
 }
 
 type userHandler struct {
+	c  *config.Config
 	us application.UserService
 	m  mapper.UserMapper
 }
 
-func NewUserHandler(us application.UserService, m mapper.UserMapper) UserHandler {
-	return &userHandler{us, m}
+func NewUserHandler(c *config.Config, us application.UserService, m mapper.UserMapper) UserHandler {
+	return &userHandler{c, us, m}
 }
 
 // UserRegister godoc
 //
-//	@Summary	Register a new user
-//	@Tags		Users
-//	@Accept		json
-//	@Produce	json
-//	@Param		data	body	dto.CreateUserRequest	true	"Register input"
-//	@Success	201
-//	@Failure	400	{object}	errors.HTTPError
-//	@Failure	409	{object}	errors.HTTPError
-//	@Failure	500	{object}	errors.HTTPError
-//	@Router		/users/register [post]
+//	@Summary		Register a new user
+//	@Description	A link to confirm account will be sent to the provided email
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			data	body	dto.CreateUserRequest	true	"Register input"
+//	@Success		202
+//	@Failure		400	{object}	errors.HTTPError
+//	@Failure		409	{object}	errors.HTTPError
+//	@Failure		500	{object}	errors.HTTPError
+//	@Router			/users/register [post]
 func (h *userHandler) Register(ctx *gin.Context) {
 	body := &dto.CreateUserRequest{}
 	if err := ctx.ShouldBindJSON(body); err != nil {
@@ -67,7 +73,7 @@ func (h *userHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.Status(http.StatusAccepted)
 }
 
 // UserConfirm godoc
@@ -83,9 +89,9 @@ func (h *userHandler) Register(ctx *gin.Context) {
 //	@Failure		401	{object}	errors.HTTPError
 //	@Failure		409	{object}	errors.HTTPError
 //	@Failure		500	{object}	errors.HTTPError
-//	@Router			/users/confirm [post]
-func (h *userHandler) Confirm(ctx *gin.Context) {
-	preUserID, err := h.getUserID(ctx)
+//	@Router			/users/confirm-account [post]
+func (h *userHandler) ConfirmAccount(ctx *gin.Context) {
+	preUserID, err := h.resolveSubject(ctx)
 	if err != nil {
 		return
 	}
@@ -115,20 +121,20 @@ func (h *userHandler) Confirm(ctx *gin.Context) {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			data	body	dto.ResendConfirmUserRequest	true	"ResendConfirm input"
-//	@Success		204
+//	@Param			data	body	dto.UserEmailRequest	true	"Resend confirm input"
+//	@Success		202
 //	@Failure		400	{object}	errors.HTTPError
 //	@Failure		409	{object}	errors.HTTPError
 //	@Failure		500	{object}	errors.HTTPError
-//	@Router			/users/confirm/resend [post]
-func (h *userHandler) ResendConfirm(ctx *gin.Context) {
-	body := &dto.ResendConfirmUserRequest{}
+//	@Router			/users/confirm-account/resend [post]
+func (h *userHandler) ResendConfirmAccount(ctx *gin.Context) {
+	body := &dto.UserEmailRequest{}
 	if err := ctx.ShouldBindJSON(body); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
 		return
 	}
 
-	if err := h.us.ResendConfirm(ctx, body.Email); err != nil {
+	if err := h.us.SendConfirmToken(ctx, body.Email); err != nil {
 		code := http.StatusInternalServerError
 		if errors.Is(err, ae.ErrNoAwaitingConfirm) {
 			code = http.StatusConflict
@@ -140,7 +146,7 @@ func (h *userHandler) ResendConfirm(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusNoContent)
+	ctx.Status(http.StatusAccepted)
 }
 
 // UserLogin godoc
@@ -181,7 +187,7 @@ func (h *userHandler) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, h.m.TokenModelToTokenDTO(tokens))
 }
 
-// UserRefresh godoc
+// UserMeTokens godoc
 //
 //	@Summary		Generate a new pair of user tokens
 //	@Description	Requires a valid refresh token sent in the Authorization header
@@ -193,14 +199,14 @@ func (h *userHandler) Login(ctx *gin.Context) {
 //	@Failure		401	{object}	errors.HTTPError
 //	@Failure		404	{object}	errors.HTTPError
 //	@Failure		500	{object}	errors.HTTPError
-//	@Router			/users/refresh [post]
-func (h *userHandler) Refresh(ctx *gin.Context) {
-	userID, err := h.getUserID(ctx)
+//	@Router			/users/me/tokens [post]
+func (h *userHandler) Tokens(ctx *gin.Context) {
+	userID, err := h.resolveSubject(ctx)
 	if err != nil {
 		return
 	}
 
-	tokens, err := h.us.Refresh(ctx, userID)
+	tokens, err := h.us.GetTokens(ctx, userID)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(err))
 		return
@@ -208,6 +214,22 @@ func (h *userHandler) Refresh(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, h.m.TokenModelToTokenDTO(tokens))
 }
+
+// UserRefresh godoc
+//
+//	@Deprecated
+//	@Summary		Generate a new pair of user tokens
+//	@Description	Requires a valid refresh token sent in the Authorization header
+//	@Security		BearerAuth
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	dto.Tokens
+//	@Failure		401	{object}	errors.HTTPError
+//	@Failure		404	{object}	errors.HTTPError
+//	@Failure		500	{object}	errors.HTTPError
+//	@Router			/users/refresh [post]
+func (h *userHandler) Refresh(ctx *gin.Context) {}
 
 // UserGetMe godoc
 //
@@ -222,7 +244,7 @@ func (h *userHandler) Refresh(ctx *gin.Context) {
 //	@Failure	500	{object}	errors.HTTPError
 //	@Router		/users/me [get]
 func (h *userHandler) Get(ctx *gin.Context) {
-	userID, err := h.getUserID(ctx)
+	userID, err := h.resolveSubject(ctx)
 	if err != nil {
 		return
 	}
@@ -258,7 +280,7 @@ func (h *userHandler) Get(ctx *gin.Context) {
 //	@Failure	500	{object}	errors.HTTPError
 //	@Router		/users/me [patch]
 func (h *userHandler) Update(ctx *gin.Context) {
-	userID, err := h.getUserID(ctx)
+	userID, err := h.resolveSubject(ctx)
 	if err != nil {
 		return
 	}
@@ -303,7 +325,7 @@ func (h *userHandler) Update(ctx *gin.Context) {
 //	@Failure	500	{object}	errors.HTTPError
 //	@Router		/users/me [delete]
 func (h *userHandler) Delete(ctx *gin.Context) {
-	userID, err := h.getUserID(ctx)
+	userID, err := h.resolveSubject(ctx)
 	if err != nil {
 		return
 	}
@@ -349,7 +371,7 @@ func (h *userHandler) Delete(ctx *gin.Context) {
 //	@Failure	500	{object}	errors.HTTPError
 //	@Router		/users/me/password [patch]
 func (h *userHandler) ChangePassword(ctx *gin.Context) {
-	userID, err := h.getUserID(ctx)
+	userID, err := h.resolveSubject(ctx)
 	if err != nil {
 		return
 	}
@@ -385,12 +407,100 @@ func (h *userHandler) ChangePassword(ctx *gin.Context) {
 	ctx.Status(http.StatusNoContent)
 }
 
-func (h *userHandler) getUserID(ctx *gin.Context) (uuid.UUID, error) {
-	userID, err := uuid.Parse(ctx.MustGet("UserID").(string))
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(err))
-		return uuid.Nil, err
+// UserResetPasswordToken godoc
+//
+//	@Summary		Call an action to reset user's password
+//	@Description	User receives a token at a given email
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			data	body	dto.UserEmailRequest	true	"Reset passoword data"
+//	@Success		202
+//	@Failure		400	{object}	errors.HTTPError
+//	@Failure		500	{object}	errors.HTTPError
+//	@Router			/users/reset-password [post]
+func (h *userHandler) ResetPasswordToken(ctx *gin.Context) {
+	body := &dto.UserEmailRequest{}
+	if err := ctx.ShouldBindJSON(body); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
+		return
 	}
 
-	return userID, nil
+	age := int(time.Duration(h.c.JWT.ResetLifespanMinutes * float32(time.Minute)).Milliseconds())
+
+	hashSubID, err := h.us.SendResetToken(ctx, body.Email)
+	if err != nil {
+		// return successful response when user does not exist to do not let scan the API
+		if !errors.Is(err, ae.ErrUserNotFound) {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(err))
+			return
+		}
+	}
+
+	ctx.SetSameSite(http.SameSiteStrictMode)
+	ctx.SetCookie("rps", hashSubID, age, "/api/v1/users/reset-password", h.c.Server.Domain, true, true)
+
+	ctx.Status(http.StatusAccepted)
+}
+
+// UserResetPasswordChange godoc
+//
+//	@Summary		Set a new password for a user
+//	@Description	Requires a token sent in the Authorization header to verify password's change action
+//	@Security		BearerAuth
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			data	body	dto.ResetUserPasswordRequest	true	"Reset passoword data"
+//	@Success		204
+//	@Failure		400	{object}	errors.HTTPError
+//	@Failure		401	{object}	errors.HTTPError
+//	@Failure		500	{object}	errors.HTTPError
+//	@Router			/users/reset-password [patch]
+func (h *userHandler) ResetPasswordChange(ctx *gin.Context) {
+	defer func() {
+		ctx.SetSameSite(http.SameSiteStrictMode)
+		ctx.SetCookie("rps", "", -1, "/", h.c.Server.Domain, true, true)
+	}()
+	subID, err := h.resolveSubject(ctx)
+	if err != nil {
+		return
+	}
+
+	body := &dto.ResetUserPasswordRequest{}
+	if err := ctx.ShouldBindJSON(body); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ae.NewHTTPError(err))
+		return
+	}
+
+	if err := h.us.ResetPassword(ctx, subID, body.Password); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(ae.ErrUnexpected))
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
+func (h *userHandler) resolveSubject(ctx *gin.Context) (uuid.UUID, error) {
+	ID := uuid.Nil
+	for _, key := range []string{"UserID", "SubID"} {
+		v, _ := ctx.Get(key)
+		if v == nil {
+			continue
+		}
+
+		var err error
+		ID, err = uuid.Parse(v.(string))
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(err))
+			return uuid.Nil, err
+		}
+	}
+
+	if ID == uuid.Nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(ae.ErrUnexpected))
+		return uuid.Nil, ae.ErrUnexpected
+	}
+
+	return ID, nil
 }

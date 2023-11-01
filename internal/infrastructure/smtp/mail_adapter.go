@@ -2,23 +2,20 @@ package smtp
 
 import (
 	"fmt"
-	"net/smtp"
 	"strings"
 
 	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain/adapter"
+	"github.com/Deve-Lite/DashboardX-API/pkg/smtp"
 )
 
 type mailAdapter struct {
-	c    *config.Config
-	auth *smtp.Auth
-	addr *string
+	c *config.Config
+	s smtp.Client
 }
 
-func NewMailAdapter(c *config.Config) adapter.MailAdapter {
-	auth := smtp.PlainAuth(c.MailAddress.Default, c.SMTP.User, c.SMTP.Password, c.Server.Host)
-	addr := fmt.Sprintf("%s:%d", c.SMTP.Host, c.SMTP.Port)
-	return &mailAdapter{c, &auth, &addr}
+func NewMailAdapter(c *config.Config, s smtp.Client) adapter.MailAdapter {
+	return &mailAdapter{c, s}
 }
 
 func (a *mailAdapter) SendConfirmAccount(receiver string, token string) error {
@@ -26,10 +23,12 @@ func (a *mailAdapter) SendConfirmAccount(receiver string, token string) error {
 
 	content := fmt.Sprintf(`
 		<h2>Confirm Account</h2>
-		<p>Click <a target="_blank" href="%s">link</a> to activate your account</p>
+		<p>Click <a target="_blank" rel="noreferrer nofollow" href="%s">link</a> to activate your account</p>
 	`, link)
 
-	err := smtp.SendMail(*a.addr, *a.auth, a.c.MailAddress.Default, []string{receiver}, a.createMessage("confirm", receiver, content))
+	message := a.createMessage("confirm", receiver, content)
+
+	err := a.s.SendMail(a.c.MailAddress.Default, receiver, message)
 	if err != nil {
 		return err
 	}
@@ -40,12 +39,14 @@ func (a *mailAdapter) SendConfirmAccount(receiver string, token string) error {
 func (a *mailAdapter) SendPasswordReset(receiver string, token string) error {
 	link := fmt.Sprintf("%s/%s", a.c.Frontend.ResetPasswordURL, token)
 
-	msg := fmt.Sprintf(`
+	content := fmt.Sprintf(`
 		<h2>Reset Password</h2>
-		<p>Click <a target="_blank" href="%s">link</a> to reset your password</p>
+		<p>Click <a target="_blank" rel="noreferrer nofollow" href="%s">link</a> to reset your password</p>
 	`, link)
 
-	err := smtp.SendMail(*a.addr, *a.auth, a.c.MailAddress.Default, []string{receiver}, []byte(msg))
+	message := a.createMessage("reset", receiver, content)
+
+	err := a.s.SendMail(a.c.MailAddress.Default, receiver, message)
 	if err != nil {
 		return err
 	}

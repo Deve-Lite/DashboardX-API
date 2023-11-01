@@ -16,11 +16,6 @@ type LoginUserRequest struct {
 	Password string `json:"password" binding:"required,min=6"`
 }
 
-type PasswordsUserRequest struct {
-	Password    string `json:"password" binding:"required,min=6"`
-	NewPassword string `json:"newPassword" binding:"required,min=6"`
-}
-
 type LoginUserResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
@@ -50,6 +45,10 @@ type DeleteUserRequest struct {
 	Password string `json:"password" binding:"required,min=6" swaggertype:"string"`
 }
 
-type ResendConfirmUserRequest struct {
+type UserEmailRequest struct {
 	Email string `json:"email" binding:"required,email"`
+}
+
+type ResetUserPasswordRequest struct {
+	Password string `json:"password" binding:"required,min=6" swaggertype:"string"`
 }
