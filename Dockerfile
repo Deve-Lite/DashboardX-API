@@ -21,4 +21,6 @@ COPY certs certs
 
 RUN go build -o main cmd/server/main.go
 
+EXPOSE 3000
+
 CMD ["/app/main"]
