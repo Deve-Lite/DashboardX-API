@@ -19,7 +19,7 @@ func NewMailAdapter(c *config.Config, s smtp.Client) adapter.MailAdapter {
 }
 
 func (a *mailAdapter) SendConfirmAccount(receiver string, token string) error {
-	link := fmt.Sprintf("%s/%s", a.c.Frontend.ConfirmAccountURL, token)
+	link := fmt.Sprintf("%s%s", a.c.Frontend.ConfirmAccountURL, token)
 
 	content := fmt.Sprintf(`
 		<h2>Confirm Account</h2>
@@ -37,7 +37,7 @@ func (a *mailAdapter) SendConfirmAccount(receiver string, token string) error {
 }
 
 func (a *mailAdapter) SendPasswordReset(receiver string, token string) error {
-	link := fmt.Sprintf("%s/%s", a.c.Frontend.ResetPasswordURL, token)
+	link := fmt.Sprintf("%s%s", a.c.Frontend.ResetPasswordURL, token)
 
 	content := fmt.Sprintf(`
 		<h2>Reset Password</h2>
