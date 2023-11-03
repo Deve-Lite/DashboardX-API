@@ -21,7 +21,7 @@ func NewDeviceControlRepository(db *sqlx.DB) repository.DeviceControlRepository 
 	return &deviceControlRepository{db: db}
 }
 
-func (r *deviceControlRepository) Exist(ctx context.Context, filters *domain.ExistDeviceControlFilters) (bool, error) {
+func (r *deviceControlRepository) Exist(ctx context.Context, filters *domain.DeviceControlFilters) (bool, error) {
 	var controls []*domain.DeviceControl
 
 	sql := `
@@ -37,7 +37,7 @@ func (r *deviceControlRepository) Exist(ctx context.Context, filters *domain.Exi
 	return len(controls) > 0, nil
 }
 
-func (r *deviceControlRepository) List(ctx context.Context, filters *domain.ListDeviceControlFilters) ([]*domain.DeviceControl, error) {
+func (r *deviceControlRepository) ListByDevice(ctx context.Context, deviceID uuid.UUID) ([]*domain.DeviceControl, error) {
 	var controls []*domain.DeviceControl
 
 	sql := `
@@ -49,8 +49,24 @@ func (r *deviceControlRepository) List(ctx context.Context, filters *domain.List
 		WHERE "device_id" = $1
 	`
 
-	if err := r.db.SelectContext(ctx, &controls, sql, filters.DeviceID); err != nil {
+	if err := r.db.SelectContext(ctx, &controls, sql, deviceID); err != nil {
 		return nil, errors.Wrap(err, "deviceControlRepository.List.SelectContext")
+	}
+
+	return controls, nil
+}
+
+func (r *deviceControlRepository) ListByType(ctx context.Context, filters *domain.DeviceControlFilters) ([]*domain.DeviceControl, error) {
+	var controls []*domain.DeviceControl
+
+	sql := `
+		SELECT "id", "device_id", "type"
+		FROM "device_controls"
+		WHERE "device_id" = $1 AND "type" = $2
+	`
+
+	if err := r.db.SelectContext(ctx, &controls, sql, filters.DeviceID, filters.Type); err != nil {
+		return nil, errors.Wrap(err, "deviceControlRepository.ListByType.SelectContext")
 	}
 
 	return controls, nil

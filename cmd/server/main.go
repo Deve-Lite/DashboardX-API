@@ -78,14 +78,7 @@ func runServer(gin *gin.Engine, cfg *config.ServerConfig) {
 
 func setupSwagger(gin *gin.Engine, cfg *config.ServerConfig) {
 	if cfg.Env == "development" {
-		switch cfg.Host {
-		case "127.0.0.1":
-			fallthrough
-		case "0.0.0.0":
-			fallthrough
-		case "localhost":
-			docs.SwaggerInfo.Host = cfg.URL()
-		}
+		docs.SwaggerInfo.Host = cfg.URL()
 
 		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}

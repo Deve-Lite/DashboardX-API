@@ -10,10 +10,12 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/Deve-Lite/DashboardX-API/internal/application"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/handler"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/http/rest/middleware"
+	n "github.com/Deve-Lite/DashboardX-API/pkg/nullable"
 	"github.com/Deve-Lite/DashboardX-API/pkg/postgres"
 	"github.com/Deve-Lite/DashboardX-API/pkg/redis"
 	"github.com/Deve-Lite/DashboardX-API/pkg/smtp"
@@ -43,6 +45,9 @@ type Test interface {
 	Teardown()
 	CreateUser(app *application.Application, name string, password string, email string) *User
 	DeleteUser(app *application.Application, userID uuid.UUID)
+	CreateDevice(app *application.Application, userID, brokerID uuid.UUID) uuid.UUID
+	CreateBroker(app *application.Application, userID uuid.UUID) uuid.UUID
+	CreateDeviceControl(app *application.Application, userID, deviceID uuid.UUID) uuid.UUID
 	MakeRequest(g *gin.Engine, method string, url string, payload io.Reader, token *string) *httptest.ResponseRecorder
 }
 
@@ -150,4 +155,83 @@ func (t *test) DeleteUser(app *application.Application, userID uuid.UUID) {
 	defer ctx.Done()
 
 	app.UserSrv.Delete(ctx, userID)
+}
+
+func (t *test) CreateBroker(app *application.Application, userID uuid.UUID) uuid.UUID {
+	ctx := context.Background()
+	defer ctx.Done()
+
+	brokerID, err := app.BrokerSrv.Create(ctx, &domain.CreateBroker{
+		UserID:              userID,
+		Name:                "test-server",
+		Server:              fmt.Sprintf("srv-%s", uuid.NewString()),
+		Port:                5050,
+		KeepAlive:           20,
+		IconName:            "test.jpg",
+		IconBackgroundColor: "#dededa",
+		IsSSL:               true,
+		ClientID:            n.NewString(uuid.NewString(), false, true),
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if err := app.BrokerSrv.SetCredentials(ctx, &domain.UpdateBroker{
+		ID:       brokerID,
+		UserID:   userID,
+		Username: n.NewString("user-test", false, true),
+		Password: n.NewString("secret-password", false, true),
+	}); err != nil {
+		log.Panic(err)
+	}
+
+	return brokerID
+}
+
+func (t *test) CreateDevice(app *application.Application, userID, brokerID uuid.UUID) uuid.UUID {
+	ctx := context.Background()
+	defer ctx.Done()
+
+	deviceID, err := app.DeviceSrv.Create(ctx, &domain.CreateDevice{
+		UserID:              userID,
+		BrokerID:            uuid.NullUUID{Valid: true, UUID: brokerID},
+		Name:                "test-device",
+		IconName:            "test.jpg",
+		IconBackgroundColor: "#fafefa",
+		Placing:             n.NewString("Home", false, true),
+		BasePath:            n.NewString("/", false, true),
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return deviceID
+}
+
+func (t *test) CreateDeviceControl(app *application.Application, userID, deviceID uuid.UUID) uuid.UUID {
+	ctx := context.Background()
+	defer ctx.Done()
+
+	attr := make(domain.ControlAttributes)
+	attr["payload"] = "test"
+
+	controlID, err := app.ControlSrv.Create(ctx, userID, &domain.CreateDeviceControl{
+		DeviceID:               deviceID,
+		Name:                   "control-test",
+		Type:                   enum.ControlButton,
+		QoS:                    enum.QoSZero,
+		IconName:               "test",
+		IconBackgroundColor:    "#fafefa",
+		IsAvailable:            true,
+		IsConfirmationRequired: false,
+		CanNotifyOnPublish:     true,
+		CanDisplayName:         true,
+		Topic:                  "nothing",
+		Attributes:             attr,
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return controlID
 }
