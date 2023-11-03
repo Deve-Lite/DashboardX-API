@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"log"
 )
 
 var (
@@ -29,5 +30,6 @@ type HTTPError struct {
 }
 
 func NewHTTPError(err error) *HTTPError {
+	log.Printf("Error: %s", err.Error())
 	return &HTTPError{Message: err.Error()}
 }
