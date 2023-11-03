@@ -56,13 +56,9 @@ type UpdateDeviceControl struct {
 	Attributes             ControlAttributes `db:"attributes"`
 }
 
-type ExistDeviceControlFilters struct {
+type DeviceControlFilters struct {
 	DeviceID uuid.UUID        `db:"device_id"`
 	Type     enum.ControlType `db:"type"`
-}
-
-type ListDeviceControlFilters struct {
-	DeviceID uuid.UUID `db:"device_id"`
 }
 
 type ControlAttributes map[string]interface{}

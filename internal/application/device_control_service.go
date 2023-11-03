@@ -31,7 +31,7 @@ func (dc *deviceControlService) List(ctx context.Context, userID uuid.UUID, devi
 		return nil, err
 	}
 
-	return dc.dcr.List(ctx, &domain.ListDeviceControlFilters{DeviceID: deviceID})
+	return dc.dcr.ListByDevice(ctx, deviceID)
 }
 
 func (dc *deviceControlService) Create(ctx context.Context, userID uuid.UUID, control *domain.CreateDeviceControl) (uuid.UUID, error) {
@@ -40,7 +40,7 @@ func (dc *deviceControlService) Create(ctx context.Context, userID uuid.UUID, co
 	}
 
 	if control.Type == enum.ControlState {
-		r, err := dc.dcr.Exist(ctx, &domain.ExistDeviceControlFilters{DeviceID: control.DeviceID, Type: control.Type})
+		r, err := dc.dcr.Exist(ctx, &domain.DeviceControlFilters{DeviceID: control.DeviceID, Type: control.Type})
 		if err != nil {
 			return uuid.Nil, err
 		}
@@ -57,12 +57,16 @@ func (dc *deviceControlService) Update(ctx context.Context, userID uuid.UUID, co
 		return err
 	}
 
-	if *control.Type == enum.ControlState {
-		r, err := dc.dcr.Exist(ctx, &domain.ExistDeviceControlFilters{DeviceID: control.DeviceID, Type: *control.Type})
+	if control.Type != nil && *control.Type == enum.ControlState {
+		ci, err := dc.dcr.ListByType(ctx, &domain.DeviceControlFilters{
+			DeviceID: control.DeviceID,
+			Type:     *control.Type,
+		})
 		if err != nil {
 			return err
 		}
-		if r {
+
+		if len(ci) == 1 && ci[0].ID != control.ID {
 			return ae.ErrControlStateExists
 		}
 	}

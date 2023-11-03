@@ -174,8 +174,10 @@ func (*deviceControlMapper) UpdateDTOToUpdateModel(v *dto.UpdateDeviceControlReq
 
 		d.Attributes = a
 	} else {
-		if *v.Type == enum.ControlTextOut {
-			d.Attributes = map[string]interface{}{}
+		if v.Type != nil {
+			if *v.Type == enum.ControlTextOut {
+				d.Attributes = map[string]interface{}{}
+			}
 		}
 	}
 
