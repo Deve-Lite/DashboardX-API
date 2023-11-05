@@ -23,12 +23,13 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host    string `mapstructure:"HOST"`
-	Port    uint16 `mapstructure:"PORT"`
-	Domain  string `mapstructure:"DOMAIN"`
-	Env     string `mapstructure:"ENV"`
-	TLSCert string `mapstructure:"TLS_CERT"`
-	TLSKey  string `mapstructure:"TLS_KEY"`
+	Host            string `mapstructure:"HOST"`
+	Port            uint16 `mapstructure:"PORT"`
+	Domain          string `mapstructure:"DOMAIN"`
+	Env             string `mapstructure:"ENV"`
+	TLSCert         string `mapstructure:"TLS_CERT"`
+	TLSKey          string `mapstructure:"TLS_KEY"`
+	DocsURLOverride string `mapstructure:"DOCS_URL_OVERRIDE"`
 }
 
 func (c *ServerConfig) URL() string {
