@@ -31,7 +31,7 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client, s smtp.Clien
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("emptymin", validate.EmptyMin)
 		v.RegisterValidation("emptyemail", validate.EmptyEmail)
-		v.RegisterValidation("emptyuuid", validate.EmptyEmail)
+		v.RegisterValidation("emptyuuid", validate.EmptyUUID)
 		v.RegisterValidation("emptyhexcolor", validate.EmptyHexColor)
 		v.RegisterValidation("control_attributes", validate.ControlAttributes)
 		v.RegisterValidation("control_type", validate.ControlType)
