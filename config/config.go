@@ -114,11 +114,10 @@ func loadConfig[T interface{}](v *viper.Viper, c T) *T {
 	return &c
 }
 
-func NewConfig(filename string) *Config {
+func NewConfig(path string) *Config {
 	v := viper.GetViper()
 
-	_, b, _, _ := runtime.Caller(0)
-	v.SetConfigFile(filepath.Join(filepath.Dir(b), "..", filename))
+	v.SetConfigFile(path)
 
 	err := v.ReadInConfig()
 	if err != nil {
@@ -138,4 +137,9 @@ func NewConfig(filename string) *Config {
 	}
 
 	return &config
+}
+
+func GetDefaultPath(filename string) string {
+	_, b, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(b), "..", filename)
 }

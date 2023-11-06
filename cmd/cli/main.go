@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"os"
 
 	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/Deve-Lite/DashboardX-API/internal/interfaces/cli"
@@ -10,9 +10,12 @@ import (
 )
 
 func main() {
-	c := config.NewConfig(".env")
+	cfgPath := flag.String("cfg", config.GetDefaultPath(".env"), "override default config path")
+	oper := flag.String("op", "", "set an operation to run")
+	flag.Parse()
+	c := config.NewConfig(*cfgPath)
 
-	switch arg := os.Args[1]; arg {
+	switch *oper {
 	case "migrate":
 	case "up":
 		postgres.RunUp(c.Postgres)
@@ -24,6 +27,6 @@ func main() {
 	case "seed":
 		cli.Seed(c)
 	default:
-		log.Panicf("Unknow or missing argument: %s", arg)
+		log.Panicf("You have to specify an operation: %s", *oper)
 	}
 }

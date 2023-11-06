@@ -54,7 +54,7 @@ type Test interface {
 func NewTest() Test {
 	log.Print("Setup config & database")
 
-	c := config.NewConfig("test.env")
+	c := config.NewConfig(config.GetDefaultPath("test.env"))
 
 	if postgres.Exists(c.Postgres) {
 		postgres.Drop(c.Postgres)

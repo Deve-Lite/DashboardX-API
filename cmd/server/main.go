@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/Deve-Lite/DashboardX-API/config"
@@ -29,7 +30,9 @@ import (
 // @In							header
 // @Name						Authorization
 func main() {
-	cfg := config.NewConfig(".env")
+	cfgPath := flag.String("cfg", config.GetDefaultPath(".env"), "override default config path")
+	flag.Parse()
+	cfg := config.NewConfig(*cfgPath)
 
 	db := postgres.NewDB(cfg.Postgres)
 	defer db.Close()

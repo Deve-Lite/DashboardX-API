@@ -10,7 +10,7 @@ import (
 )
 
 func TestCryptoService(t *testing.T) {
-	c := config.NewConfig("test.env")
+	c := config.NewConfig(config.GetDefaultPath("test.env"))
 	cs := application.NewCryptoService(c)
 
 	t.Run("should encrypt provided value", func(t *testing.T) {
