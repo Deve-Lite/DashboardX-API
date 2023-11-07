@@ -18,8 +18,8 @@ if ($Prune) {
 
 docker compose build --no-cache
 
-docker compose run --rm app go run ./cmd/cli/main.go create
-docker compose run --rm app go run ./cmd/cli/main.go up
-docker compose run --rm app go run ./cmd/cli/main.go seed
+docker compose run --rm app go run ./cmd/cli/main.go -op=create
+docker compose run --rm app go run ./cmd/cli/main.go -op=up
+docker compose run --rm app go run ./cmd/cli/main.go -op=seed
 
 docker compose up -d
