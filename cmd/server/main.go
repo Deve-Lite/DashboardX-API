@@ -89,6 +89,6 @@ func setupSwagger(gin *gin.Engine, cfg *config.ServerConfig) {
 		}
 		docs.SwaggerInfo.Host = host
 
-		gin.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 }
