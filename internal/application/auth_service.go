@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 type RESTAuthService interface {
@@ -105,6 +107,9 @@ func (a *restAuthService) VerifyToken(ctx context.Context, token string, tokenTy
 	if tokenType == "refresh" {
 		found, err := a.tr.Get(ctx, enum.TokenRefresh, uuid.MustParse(claims.ID), uuid.MustParse(claims.Subject))
 		if err != nil {
+			if errors.Is(err, redis.Nil) {
+				return nil, ae.ErrTokenNotFound
+			}
 			return nil, err
 		}
 
@@ -192,6 +197,9 @@ func (a *restAuthService) VerifyResetToken(ctx context.Context, token string) (*
 
 	found, err := a.tr.Get(ctx, enum.TokenReset, uuid.MustParse(claims.ID), uuid.MustParse(claims.Subject))
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, ae.ErrTokenNotFound
+		}
 		return nil, err
 	}
 
