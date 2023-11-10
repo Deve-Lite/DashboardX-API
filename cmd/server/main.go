@@ -34,6 +34,8 @@ func main() {
 	flag.Parse()
 	cfg := config.NewConfig(*cfgPath)
 
+	log.Printf("API version: %s", cfg.Server.Version)
+
 	db := postgres.NewDB(cfg.Postgres)
 	defer db.Close()
 

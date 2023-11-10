@@ -27,6 +27,7 @@ type ServerConfig struct {
 	Port            uint16 `mapstructure:"PORT"`
 	Domain          string `mapstructure:"DOMAIN"`
 	Env             string `mapstructure:"ENV"`
+	Version         string `mapstructure:"VERSION"`
 	TLSCert         string `mapstructure:"TLS_CERT"`
 	TLSKey          string `mapstructure:"TLS_KEY"`
 	DocsURLOverride string `mapstructure:"DOCS_URL_OVERRIDE"`
