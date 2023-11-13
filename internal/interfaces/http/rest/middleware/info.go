@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"github.com/Deve-Lite/DashboardX-API/config"
+	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/gin-gonic/gin"
 )
 
 type Info interface {
 	Depricated(deprecation time.Time, sunset time.Time, link string) func(*gin.Context)
+	Disabled(*gin.Context)
 }
 
 type info struct {
@@ -28,4 +30,13 @@ func (i *info) Depricated(deprecation time.Time, sunset time.Time, link string) 
 		ctx.Writer.Header().Set("Sunset", sunset.UTC().Format(http.TimeFormat))
 		ctx.Next()
 	}
+}
+
+func (i *info) Disabled(ctx *gin.Context) {
+	if i.c.Server.Env != "production" {
+		ctx.Next()
+		return
+	}
+
+	ctx.AbortWithStatusJSON(http.StatusServiceUnavailable, ae.NewHTTPError(ae.ErrEndpointDisabled))
 }

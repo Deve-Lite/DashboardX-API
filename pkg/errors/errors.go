@@ -24,6 +24,7 @@ var (
 	ErrUnexpected            = errors.New("something went wrong")
 	ErrUnauthorized          = errors.New("could not authorize a user")
 	ErrTokenNotFound         = errors.New("token no longer applies")
+	ErrEndpointDisabled      = errors.New("the endpoint has been temporarily disabled")
 )
 
 type HTTPError struct {
