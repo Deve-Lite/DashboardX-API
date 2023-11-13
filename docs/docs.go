@@ -1524,6 +1524,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/errors.HTTPError"
                         }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HTTPError"
+                        }
                     }
                 }
             }

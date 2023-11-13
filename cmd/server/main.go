@@ -82,15 +82,13 @@ func runServer(gin *gin.Engine, cfg *config.ServerConfig) {
 }
 
 func setupSwagger(gin *gin.Engine, cfg *config.ServerConfig) {
-	if cfg.Env == "development" {
-		var host string
-		if cfg.DocsURLOverride != "" {
-			host = cfg.DocsURLOverride
-		} else {
-			host = cfg.URL()
-		}
-		docs.SwaggerInfo.Host = host
-
-		gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	var host string
+	if cfg.DocsURLOverride != "" {
+		host = cfg.DocsURLOverride
+	} else {
+		host = cfg.URL()
 	}
+	docs.SwaggerInfo.Host = host
+
+	gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

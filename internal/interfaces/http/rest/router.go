@@ -19,7 +19,7 @@ func NewRouter(
 
 	// User API
 	ug := r.Group("users")
-	ug.POST("/register", uh.Register)
+	ug.POST("/register", mi.Disabled, uh.Register)
 	ug.POST("/login", uh.Login)
 	ug.POST("/confirm-account", mr.ValidConfirm, uh.ConfirmAccount)
 	ug.POST("/confirm-account/resend", uh.ResendConfirmAccount)

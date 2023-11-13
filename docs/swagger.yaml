@@ -1387,6 +1387,10 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.HTTPError'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
       summary: Register a new user
       tags:
       - Users

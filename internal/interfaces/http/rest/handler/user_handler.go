@@ -52,6 +52,7 @@ func NewUserHandler(c *config.Config, us application.UserService, m mapper.UserM
 //	@Failure		400	{object}	errors.HTTPError
 //	@Failure		409	{object}	errors.HTTPError
 //	@Failure		500	{object}	errors.HTTPError
+//	@Failure		503	{object}	errors.HTTPError
 //	@Router			/users/register [post]
 func (h *userHandler) Register(ctx *gin.Context) {
 	body := &dto.CreateUserRequest{}
