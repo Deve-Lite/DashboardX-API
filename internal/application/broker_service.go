@@ -27,10 +27,11 @@ type brokerService struct {
 	c  *config.Config
 	br repository.BrokerRepository
 	cs CryptoService
+	es EventService
 }
 
-func NewBrokerService(c *config.Config, br repository.BrokerRepository, cs CryptoService) BrokerService {
-	return &brokerService{c, br, cs}
+func NewBrokerService(c *config.Config, br repository.BrokerRepository, cs CryptoService, es EventService) BrokerService {
+	return &brokerService{c, br, cs, es}
 }
 
 func (b *brokerService) Get(ctx context.Context, brokerID uuid.UUID, userID uuid.UUID) (*domain.Broker, error) {
@@ -48,7 +49,25 @@ func (b *brokerService) Create(ctx context.Context, broker *domain.CreateBroker)
 		broker.Username = t.NewString("", false, false)
 	}
 
-	return b.br.Create(ctx, broker)
+	brokerID, err := b.br.Create(ctx, broker)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	// enum.EntityCreatedAction, broker.UserID, brokerID
+
+	b.es.Publish(ctx, domain.Event{
+		ID: uuid.New(),
+		Data: domain.EventData{
+			Action: enum.EntityCreatedAction,
+			Entity: &domain.EventEntity{
+				ID:   brokerID,
+				Name: enum.BrokersEntity,
+			},
+		},
+	}, broker.UserID, uuid.Nil)
+
+	return brokerID, nil
 }
 
 func (b *brokerService) Update(ctx context.Context, broker *domain.UpdateBroker) error {
@@ -58,11 +77,23 @@ func (b *brokerService) Update(ctx context.Context, broker *domain.UpdateBroker)
 		broker.Username = t.NewString("", false, false)
 	}
 
-	return b.br.Update(ctx, broker)
+	if err := b.br.Update(ctx, broker); err != nil {
+		return err
+	}
+
+	b.es.PublishBrokers(ctx, enum.EntityUpdatedAction, broker.UserID, broker.ID)
+
+	return nil
 }
 
 func (b *brokerService) Delete(ctx context.Context, brokerID uuid.UUID, userID uuid.UUID) error {
-	return b.br.Delete(ctx, brokerID, userID)
+	if err := b.br.Delete(ctx, brokerID, userID); err != nil {
+		return err
+	}
+
+	b.es.PublishBrokers(ctx, enum.EntityDeletedAction, userID, brokerID)
+
+	return nil
 }
 
 func (b *brokerService) GetCredentials(ctx context.Context, brokerID uuid.UUID, userID uuid.UUID) (*domain.Broker, error) {
@@ -115,5 +146,11 @@ func (b *brokerService) SetCredentials(ctx context.Context, broker *domain.Updat
 		broker.Password = t.NewString(password, false, true)
 	}
 
-	return b.br.Update(ctx, broker)
+	if err := b.br.Update(ctx, broker); err != nil {
+		return err
+	}
+
+	b.es.PublishBrokers(ctx, enum.EntityUpdatedAction, broker.UserID, broker.ID)
+
+	return nil
 }

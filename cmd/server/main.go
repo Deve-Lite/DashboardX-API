@@ -58,10 +58,11 @@ func main() {
 	userHnd := handler.NewUserHandler(cfg, app.UserSrv, app.UserMap)
 	brokerHnd := handler.NewBrokerHandler(app.BrokerSrv, app.BrokerMap)
 	deviceHnd := handler.NewDeviceHandler(app.DeviceSrv, app.ControlSrv, app.DeviceMap, app.ControlMap)
+	eventHnd := handler.NewEventHandler(cfg, app.EventSrv)
 
 	gin.Use(middleware.CORS(cfg.CORS))
 
-	rest.NewRouter(gin, mRule, mInfo, userHnd, brokerHnd, deviceHnd)
+	rest.NewRouter(gin, mRule, mInfo, userHnd, brokerHnd, deviceHnd, eventHnd)
 
 	setupSwagger(gin, cfg.Server)
 

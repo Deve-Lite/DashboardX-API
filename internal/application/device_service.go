@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain/repository"
 	"github.com/google/uuid"
@@ -19,10 +20,11 @@ type DeviceService interface {
 type deviceService struct {
 	dr repository.DeviceRepository
 	bs BrokerService
+	es EventService
 }
 
-func NewDeviceService(dr repository.DeviceRepository, bs BrokerService) DeviceService {
-	return &deviceService{dr, bs}
+func NewDeviceService(dr repository.DeviceRepository, bs BrokerService, es EventService) DeviceService {
+	return &deviceService{dr, bs, es}
 }
 
 func (d *deviceService) Get(ctx context.Context, deviceID uuid.UUID, userID uuid.UUID) (*domain.Device, error) {
@@ -40,7 +42,14 @@ func (d *deviceService) Create(ctx context.Context, device *domain.CreateDevice)
 		}
 	}
 
-	return d.dr.Create(ctx, device)
+	deviceID, err := d.dr.Create(ctx, device)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	d.es.PublishDevices(ctx, enum.EntityCreatedAction, device.UserID, device.BrokerID.UUID, deviceID)
+
+	return deviceID, nil
 }
 
 func (d *deviceService) Update(ctx context.Context, device *domain.UpdateDevice) error {
@@ -50,9 +59,26 @@ func (d *deviceService) Update(ctx context.Context, device *domain.UpdateDevice)
 		}
 	}
 
-	return d.dr.Update(ctx, device)
+	if err := d.dr.Update(ctx, device); err != nil {
+		return err
+	}
+
+	{
+		device, _ := d.Get(ctx, device.ID, device.UserID)
+		d.es.PublishDevices(ctx, enum.EntityUpdatedAction, device.UserID, device.BrokerID.UUID, device.ID)
+	}
+
+	return nil
 }
 
 func (d *deviceService) Delete(ctx context.Context, deviceID uuid.UUID, userID uuid.UUID) error {
-	return d.dr.Delete(ctx, deviceID, userID)
+	device, _ := d.Get(ctx, deviceID, userID)
+
+	if err := d.dr.Delete(ctx, deviceID, userID); err != nil {
+		return err
+	}
+
+	d.es.PublishDevices(ctx, enum.EntityUpdatedAction, device.UserID, device.BrokerID.UUID, device.ID)
+
+	return nil
 }

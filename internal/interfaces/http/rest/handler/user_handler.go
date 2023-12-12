@@ -8,6 +8,7 @@ import (
 	"github.com/Deve-Lite/DashboardX-API/config"
 	"github.com/Deve-Lite/DashboardX-API/internal/application"
 	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/application/mapper"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
@@ -22,6 +23,7 @@ type UserHandler interface {
 	ConfirmAccount(ctx *gin.Context)
 	ResendConfirmAccount(ctx *gin.Context)
 	Login(ctx *gin.Context)
+	Logout(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
@@ -186,6 +188,41 @@ func (h *userHandler) Login(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, h.m.TokenModelToTokenDTO(tokens))
+}
+
+// UserLogout godoc
+//
+//	@Summary	Logout a user
+//	@Tags		Users
+//	@Accept		json
+//	@Produce	json
+//	@Success	204
+//	@Failure	401	{object}	errors.HTTPError
+//	@Failure	404	{object}	errors.HTTPError
+//	@Failure	500	{object}	errors.HTTPError
+//	@Router		/users/me/logout [post]
+func (h *userHandler) Logout(ctx *gin.Context) {
+	userID, err := h.resolveSubject(ctx)
+	if err != nil {
+		return
+	}
+
+	ecID, _ := ctx.Cookie(string(enum.EventChannelCookie))
+	channelID := uuid.Nil
+	if ecID != "" {
+		channelID, err = uuid.Parse(ecID)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, ae.NewHTTPError(ae.ErrUnexpected))
+			return
+		}
+	}
+
+	h.us.Logout(ctx, userID, channelID)
+
+	ctx.SetSameSite(http.SameSiteStrictMode)
+	ctx.SetCookie(string(enum.EventChannelCookie), "", -1, "/", h.c.Server.Domain, true, true)
+
+	ctx.Status(http.StatusNoContent)
 }
 
 // UserMeTokens godoc
@@ -439,7 +476,7 @@ func (h *userHandler) ResetPasswordToken(ctx *gin.Context) {
 	}
 
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("rps", hashSubID, age, "/api/v1/users/reset-password", h.c.Server.Domain, true, true)
+	ctx.SetCookie(string(enum.ResetPasswordCookie), hashSubID, age, "/api/v1/users/reset-password", h.c.Server.Domain, true, true)
 
 	ctx.Status(http.StatusAccepted)
 }
@@ -461,7 +498,7 @@ func (h *userHandler) ResetPasswordToken(ctx *gin.Context) {
 func (h *userHandler) ResetPasswordChange(ctx *gin.Context) {
 	defer func() {
 		ctx.SetSameSite(http.SameSiteStrictMode)
-		ctx.SetCookie("rps", "", -1, "/", h.c.Server.Domain, true, true)
+		ctx.SetCookie(string(enum.ResetPasswordCookie), "", -1, "/", h.c.Server.Domain, true, true)
 	}()
 	subID, err := h.resolveSubject(ctx)
 	if err != nil {

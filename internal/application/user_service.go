@@ -18,6 +18,7 @@ import (
 
 type UserService interface {
 	Login(ctx context.Context, user *domain.User) (*dto.Tokens, error)
+	Logout(ctx context.Context, userID, channelID uuid.UUID)
 	GetTokens(ctx context.Context, userID uuid.UUID) (*dto.Tokens, error)
 	Get(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 	PreCreate(ctx context.Context, user *domain.CreateUser) (uuid.UUID, error)
@@ -38,6 +39,7 @@ type userService struct {
 	as  RESTAuthService
 	ms  MailService
 	cs  CryptoService
+	es  EventService
 }
 
 func NewUserService(
@@ -48,8 +50,9 @@ func NewUserService(
 	as RESTAuthService,
 	ms MailService,
 	cs CryptoService,
+	es EventService,
 ) UserService {
-	return &userService{c, pur, ur, uar, as, ms, cs}
+	return &userService{c, pur, ur, uar, as, ms, cs, es}
 }
 
 func (u *userService) Login(ctx context.Context, user *domain.User) (*dto.Tokens, error) {
@@ -75,6 +78,19 @@ func (u *userService) Login(ctx context.Context, user *domain.User) (*dto.Tokens
 	}
 
 	return tokens, nil
+}
+
+func (u *userService) Logout(ctx context.Context, userID, channelID uuid.UUID) {
+	if channelID == uuid.Nil {
+		return
+	}
+
+	u.es.Publish(ctx, domain.Event{
+		ID: uuid.New(),
+		Data: domain.EventData{
+			Action: enum.ChannelClosedAction,
+		},
+	}, userID, channelID)
 }
 
 func (u *userService) GetTokens(ctx context.Context, userID uuid.UUID) (*dto.Tokens, error) {
