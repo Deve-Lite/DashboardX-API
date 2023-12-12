@@ -20,6 +20,7 @@ type Application struct {
 	BrokerSrv  BrokerService
 	DeviceSrv  DeviceService
 	ControlSrv DeviceControlService
+	EventSrv   EventService
 
 	UserMap    mapper.UserMapper
 	BrokerMap  mapper.BrokerMapper
@@ -49,14 +50,15 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client, s smtp.Clien
 
 	mailAdp := ismtp.NewMailAdapter(c, s)
 
+	eventSrv := NewEventService()
 	mailSrv := NewMailService(mailAdp)
 	cryptoSrv := NewCryptoService(c)
 	authSrv := NewRESTAuthService(c, tokenRepo, cryptoSrv)
 	userSrv := NewUserService(c, preUserRepo, userRepo, userActionRepo,
-		authSrv, mailSrv, cryptoSrv)
-	brokerSrv := NewBrokerService(c, brokerRepo, cryptoSrv)
-	deviceSrv := NewDeviceService(deviceRepo, brokerSrv)
-	controlSrv := NewDeviceControlService(controlRepo, deviceSrv)
+		authSrv, mailSrv, cryptoSrv, eventSrv)
+	brokerSrv := NewBrokerService(c, brokerRepo, cryptoSrv, eventSrv)
+	deviceSrv := NewDeviceService(deviceRepo, brokerSrv, eventSrv)
+	controlSrv := NewDeviceControlService(controlRepo, deviceSrv, eventSrv)
 
 	userMap := mapper.NewUserMapper()
 	brokerMap := mapper.NewBrokerMapper()
@@ -69,6 +71,7 @@ func NewApplication(c *config.Config, d *sqlx.DB, ch *redis.Client, s smtp.Clien
 		brokerSrv,
 		deviceSrv,
 		controlSrv,
+		eventSrv,
 		userMap,
 		brokerMap,
 		deviceMap,

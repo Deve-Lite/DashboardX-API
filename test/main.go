@@ -101,8 +101,9 @@ func (t *test) SetupApp() (*gin.Engine, *application.Application) {
 	userHnd := handler.NewUserHandler(t.c, app.UserSrv, app.UserMap)
 	brokerHnd := handler.NewBrokerHandler(app.BrokerSrv, app.BrokerMap)
 	deviceHnd := handler.NewDeviceHandler(app.DeviceSrv, app.ControlSrv, app.DeviceMap, app.ControlMap)
+	eventHnd := handler.NewEventHandler(t.c, app.EventSrv)
 
-	rest.NewRouter(gin, mRule, mInfo, userHnd, brokerHnd, deviceHnd)
+	rest.NewRouter(gin, mRule, mInfo, userHnd, brokerHnd, deviceHnd, eventHnd)
 
 	return gin, app
 }

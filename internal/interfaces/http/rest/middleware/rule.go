@@ -7,6 +7,7 @@ import (
 
 	"github.com/Deve-Lite/DashboardX-API/internal/application"
 	"github.com/Deve-Lite/DashboardX-API/internal/application/dto"
+	"github.com/Deve-Lite/DashboardX-API/internal/application/enum"
 	"github.com/Deve-Lite/DashboardX-API/internal/domain"
 	ae "github.com/Deve-Lite/DashboardX-API/pkg/errors"
 	"github.com/gin-gonic/gin"
@@ -114,7 +115,7 @@ func (r *rule) ValidResetSubject(ctx *gin.Context) {
 		return
 	}
 
-	hashSubID, err := ctx.Cookie("rps")
+	hashSubID, err := ctx.Cookie(string(enum.ResetPasswordCookie))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, ae.NewHTTPError(err))
 		return

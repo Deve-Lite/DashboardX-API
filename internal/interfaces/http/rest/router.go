@@ -14,7 +14,8 @@ func NewRouter(
 	mi middleware.Info,
 	uh handler.UserHandler,
 	bh handler.BrokerHandler,
-	dh handler.DeviceHandler) {
+	dh handler.DeviceHandler,
+	eh handler.EventHandler) {
 	r := g.Group("/api/v1")
 
 	// User API
@@ -34,6 +35,7 @@ func NewRouter(
 	ug.DELETE("/me", mr.LoggedIn, uh.Delete)
 	ug.POST("/me/tokens", mr.ValidRefresh, uh.Tokens)
 	ug.PATCH("/me/password", mr.LoggedIn, uh.ChangePassword)
+	ug.POST("/me/logout", mr.LoggedIn, uh.Logout)
 
 	// Broker API
 	bg := r.Group("brokers")
@@ -56,4 +58,7 @@ func NewRouter(
 	dg.POST("/:deviceId/controls", mr.LoggedIn, dh.CreateControl)
 	dg.PATCH("/:deviceId/controls/:controlId", mr.LoggedIn, dh.UpdateControl)
 	dg.DELETE("/:deviceId/controls/:controlId", mr.LoggedIn, dh.DeleteControl)
+
+	// Event API
+	r.GET("events", mr.LoggedIn, eh.Broadcast)
 }

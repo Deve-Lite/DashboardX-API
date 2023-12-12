@@ -1057,6 +1057,25 @@ paths:
       summary: Update a device control
       tags:
       - Devices
+  /events:
+    get:
+      consumes:
+      - application/json
+      description: The event bus allows you to receive events along a specific user,
+      produces:
+      - text/event-stream
+      responses:
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Subscribe a client (user) to the events bus
+      tags:
+      - Events
   /users/confirm-account:
     post:
       consumes:
@@ -1260,6 +1279,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a logged in user
+      tags:
+      - Users
+  /users/me/logout:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.HTTPError'
+      summary: Logout a user
       tags:
       - Users
   /users/me/password:

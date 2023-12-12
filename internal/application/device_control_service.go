@@ -20,10 +20,11 @@ type DeviceControlService interface {
 type deviceControlService struct {
 	dcr repository.DeviceControlRepository
 	ds  DeviceService
+	es  EventService
 }
 
-func NewDeviceControlService(dcr repository.DeviceControlRepository, ds DeviceService) DeviceControlService {
-	return &deviceControlService{dcr, ds}
+func NewDeviceControlService(dcr repository.DeviceControlRepository, ds DeviceService, es EventService) DeviceControlService {
+	return &deviceControlService{dcr, ds, es}
 }
 
 func (dc *deviceControlService) List(ctx context.Context, userID uuid.UUID, deviceID uuid.UUID) ([]*domain.DeviceControl, error) {
@@ -35,7 +36,8 @@ func (dc *deviceControlService) List(ctx context.Context, userID uuid.UUID, devi
 }
 
 func (dc *deviceControlService) Create(ctx context.Context, userID uuid.UUID, control *domain.CreateDeviceControl) (uuid.UUID, error) {
-	if _, err := dc.ds.Get(ctx, control.DeviceID, userID); err != nil {
+	device, err := dc.ds.Get(ctx, control.DeviceID, userID)
+	if err != nil {
 		return uuid.Nil, err
 	}
 
@@ -49,11 +51,19 @@ func (dc *deviceControlService) Create(ctx context.Context, userID uuid.UUID, co
 		}
 	}
 
-	return dc.dcr.Create(ctx, control)
+	controlID, err := dc.dcr.Create(ctx, control)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	dc.es.PublishDeviceControls(ctx, enum.EntityCreatedAction, userID, device.BrokerID.UUID, device.ID, controlID)
+
+	return controlID, nil
 }
 
 func (dc *deviceControlService) Update(ctx context.Context, userID uuid.UUID, control *domain.UpdateDeviceControl) error {
-	if _, err := dc.ds.Get(ctx, control.DeviceID, userID); err != nil {
+	device, err := dc.ds.Get(ctx, control.DeviceID, userID)
+	if err != nil {
 		return err
 	}
 
@@ -71,13 +81,28 @@ func (dc *deviceControlService) Update(ctx context.Context, userID uuid.UUID, co
 		}
 	}
 
-	return dc.dcr.Update(ctx, control)
-}
-
-func (dc *deviceControlService) Delete(ctx context.Context, userID uuid.UUID, deviceID uuid.UUID, controlID uuid.UUID) error {
-	if _, err := dc.ds.Get(ctx, deviceID, userID); err != nil {
+	err = dc.dcr.Update(ctx, control)
+	if err != nil {
 		return err
 	}
 
-	return dc.dcr.Delete(ctx, deviceID, controlID)
+	dc.es.PublishDeviceControls(ctx, enum.EntityCreatedAction, userID, device.BrokerID.UUID, device.ID, control.ID)
+
+	return nil
+}
+
+func (dc *deviceControlService) Delete(ctx context.Context, userID uuid.UUID, deviceID uuid.UUID, controlID uuid.UUID) error {
+	device, err := dc.ds.Get(ctx, deviceID, userID)
+	if err != nil {
+		return err
+	}
+
+	err = dc.dcr.Delete(ctx, deviceID, controlID)
+	if err != nil {
+		return err
+	}
+
+	dc.es.PublishDeviceControls(ctx, enum.EntityCreatedAction, userID, device.BrokerID.UUID, deviceID, controlID)
+
+	return nil
 }
